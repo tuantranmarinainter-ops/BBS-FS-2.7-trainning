@@ -1,3 +1,4 @@
+import * as THREE from './vendor/three.module.min.js';
 import { evaluateProject } from './core.js';
 
 // Scene values and joint rotations are trainer conventions, pending BBS runtime verification.
@@ -17,30 +18,43 @@ function color(value,fallback){if(typeof value!=='string')return fallback;const 
 const numeric=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
 const enabled=v=>v===true || (typeof v==='string'&&!['','none','off','false','0'].includes(v.toLowerCase()));
 
-export function createScene(canvas,{onSelect=()=>{},onError=()=>{}}={}){
- let gl;try{gl=canvas.getContext('webgl',{antialias:true,alpha:false});}catch{};
- if(!gl){onError('Không thể chạy cảnh 3D: trình duyệt không hỗ trợ WebGL.');return {render(){},setView(){},resetView(){},dispose(){}}}
- function shader(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s}
- let program;
- try{program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,'attribute vec3 p; uniform mat4 m; void main(){gl_Position=m*vec4(p,1.0);}'));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,'precision mediump float; uniform vec3 c; void main(){gl_FragColor=vec4(c,1.0);}'));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));}catch(e){onError('Không thể khởi tạo WebGL: '+e.message);return {render(){},setView(){},resetView(){},dispose(){}}}
- const pos=gl.getAttribLocation(program,'p'),matrix=gl.getUniformLocation(program,'m'),colour=gl.getUniformLocation(program,'c');
- const cube=new Float32Array([ // triangles, centered unit cube
- -.5,-.5,.5,.5,-.5,.5,.5,.5,.5, -.5,-.5,.5,.5,.5,.5,-.5,.5,.5,
- .5,-.5,-.5,-.5,-.5,-.5,-.5,.5,-.5, .5,-.5,-.5,-.5,.5,-.5,.5,.5,-.5,
- -.5,-.5,-.5,-.5,-.5,.5,-.5,.5,.5, -.5,-.5,-.5,-.5,.5,.5,-.5,.5,-.5,
- .5,-.5,.5,.5,-.5,-.5,.5,.5,-.5, .5,-.5,.5,.5,.5,-.5,.5,.5,.5,
- -.5,.5,.5,.5,.5,.5,.5,.5,-.5, -.5,.5,.5,.5,.5,-.5,-.5,.5,-.5,
- -.5,-.5,-.5,.5,-.5,-.5,.5,-.5,.5, -.5,-.5,-.5,.5,-.5,.5,-.5,-.5,.5]);
- const cubeBuffer=gl.createBuffer(),lineBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,cubeBuffer);gl.bufferData(gl.ARRAY_BUFFER,cube,gl.STATIC_DRAW);
+export function createScene(canvas,{onSelect=()=>{},onError=()=>{},rendererFactory=(options)=>new THREE.WebGLRenderer(options)}={}){
+ let renderer;
+ try { renderer=rendererFactory({canvas,antialias:true,alpha:false}); }
+ catch(e) { onError('Không thể chạy cảnh 3D Three.js: WebGL không khả dụng.'); return {render(){},setView(){},resetView(){},dispose(){}}; }
+ // Three.js uses WebGL underneath; drawing state is isolated per scene instance.
+ const threeScene=new THREE.Scene(), threeCamera=new THREE.Camera(), pool=[];
+ const cubeGeometry=new THREE.BoxGeometry(1,1,1);
+ renderer.setClearColor(0x111c26,1);
+ let used=0;
+ function meshFor(mode){
+  let item=pool[used];
+  if(!item || item.mode!==mode){
+   if(item){threeScene.remove(item.object); item.material.dispose(); if(item.mode==='line')item.geometry.dispose();}
+   const geometry=mode==='box'?cubeGeometry:new THREE.BufferGeometry();
+   const material=new THREE.ShaderMaterial({uniforms:{m:{value:new THREE.Matrix4()},c:{value:new THREE.Vector3()}},
+    vertexShader:'uniform mat4 m; void main(){gl_Position=m*vec4(position,1.0);}',
+    fragmentShader:'uniform vec3 c; void main(){gl_FragColor=vec4(c,1.0);}',side:THREE.DoubleSide});
+   const object=mode==='box'?new THREE.Mesh(geometry,material):new THREE.LineSegments(geometry,material);
+   object.frustumCulled=false;object.matrixAutoUpdate=false;threeScene.add(object);
+   item={object,material,geometry,mode};pool[used]=item;
+  }
+  used++;item.object.visible=true;return item;
+ }
  // Labels live over the canvas so they remain legible at any scale and never intercept input.
  const parent=canvas.parentElement,doc=canvas.ownerDocument,labelLayer=parent&&doc?.createElement?doc.createElement('div'):null;
  if(labelLayer){Object.assign(labelLayer.style,{position:'absolute',inset:'0',overflow:'hidden',pointerEvents:'none'});labelLayer.setAttribute('aria-hidden','true');parent.appendChild(labelLayer)}
  const initial={azimuth:.75,elevation:.48,distance:17,target:[.8,1,1]};let camera={...initial,target:[...initial.target]},last=null,drag=null,picks=[];
- function draw(buffer,vertices,mode,model,c){gl.bindBuffer(gl.ARRAY_BUFFER,buffer);if(vertices)gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.DYNAMIC_DRAW);gl.vertexAttribPointer(pos,3,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(pos);gl.uniformMatrix4fv(matrix,false,mul(vp,model));gl.uniform3fv(colour,c);gl.drawArrays(mode,0,vertices?vertices.length/3:36)}
- let vp=I();function box(parent,x,y,z,w,h,d,c){draw(cubeBuffer,null,gl.TRIANGLES,mul(mul(parent,translate(x,y,z)),scale(w,h,d)),c)}
- function lines(vertices,c){draw(lineBuffer,vertices,gl.LINES,I(),c)}
- function resize(){const rect=canvas.getBoundingClientRect(),ratio=Math.min(globalThis.devicePixelRatio||1,2),w=Math.max(1,Math.round(rect.width*ratio)),h=Math.max(1,Math.round(rect.height*ratio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}gl.viewport(0,0,w,h)}
- function drawFrame(){if(!last)return;resize();gl.enable(gl.DEPTH_TEST);gl.clearColor(.065,.11,.15,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(program);
+ function draw(mode,vertices,model,c){
+  const item=meshFor(mode);
+  if(vertices)item.geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+  item.material.uniforms.m.value.fromArray(mul(vp,model));
+  item.material.uniforms.c.value.set(c[0],c[1],c[2]);
+ }
+ let vp=I();function box(parent,x,y,z,w,h,d,c){draw('box',null,mul(mul(parent,translate(x,y,z)),scale(w,h,d)),c)}
+ function lines(vertices,c){draw('line',vertices,I(),c)}
+ function resize(){const rect=canvas.getBoundingClientRect(),ratio=Math.min(globalThis.devicePixelRatio||1,2),w=Math.max(1,Math.round(rect.width*ratio)),h=Math.max(1,Math.round(rect.height*ratio));if(canvas.width!==w||canvas.height!==h)renderer.setSize(w,h,false)}
+ function drawFrame(){if(!last)return;resize();used=0;
  const {azimuth:a,elevation:e,distance:d,target:t}=camera,eye=[t[0]+d*Math.cos(e)*Math.sin(a),t[1]+d*Math.sin(e),t[2]+d*Math.cos(e)*Math.cos(a)];vp=mul(perspective(Math.PI/4,canvas.width/canvas.height,.1,150),lookAt(eye,t));
  const grid=[];for(let i=-10;i<=10;i++)grid.push(i,0,-10,i,0,10,-10,0,i,10,0,i);lines(grid,[.20,.29,.35]);lines([0,.01,0,4,.01,0],[.8,.34,.35]);lines([0,.01,0,0,3,0],[.36,.74,.43]);lines([0,.01,0,0,.01,4],[.34,.55,.87]);
  const state=evaluateProject(last.project,last.tick);if(last.options.preview){const {trackId,value}=last.options.preview;for(const replay of last.project.replays){const track=replay.tracks.find(x=>x.id===trackId);if(track&&state[replay.id]){if(track.owner==='form'){state[replay.id].parts??={};state[replay.id].parts[track.partId]??={};state[replay.id].parts[track.partId][track.propertyId]=value}else state[replay.id][track.propertyId]=value;break}}}
@@ -66,6 +80,8 @@ export function createScene(canvas,{onSelect=()=>{},onError=()=>{}}={}){
  }
  if(isVfx)box(base,0,.25,0,.3,.3,.3,[.58,.4,.8]);for(const part of Object.values(s.parts||{})){const effect=String(part['vfx.kind']??'none').toLowerCase();if(effect!=='none'&&effect!=='off'&&part.visible!==false){const [fx,fy,fz]=part===root?[x,y,z]:transform(base,[numeric(part['transform.x']),numeric(part['transform.y']),numeric(part['transform.z'])]),radius=Math.max(.1,Math.min(4,numeric(part['vfx.size'],1)))*size*(part===root?1:Math.max(.1,Math.min(4,numeric(part['transform.scale'],1)))),intensity=Math.max(0,Math.min(2,numeric(s['variable.intensity'],1)))/2,v=[];for(let i=0;i<32;i++){const a=i*Math.PI/16,b=(i+1)*Math.PI/16;v.push(fx+Math.cos(a)*radius,fy+.05,fz+Math.sin(a)*radius,fx+Math.cos(b)*radius,fy+.05,fz+Math.sin(b)*radius)}lines(v,[.65*intensity,.48*intensity,.95*intensity]);if(effect.includes('spark')||effect.includes('particle'))for(let i=0;i<6;i++){const a=i*Math.PI/3;box(translate(fx,fy,fz),Math.cos(a)*radius,.25+i*.15,Math.sin(a)*radius,.09,.09,.09,[.8,.65,1])}}}
  }
+ for(let i=used;i<pool.length;i++)pool[i].object.visible=false;
+ renderer.render(threeScene,threeCamera);
  }
  function render(project,tick,options={}){last={project,tick,options};drawFrame()}
  function setView(view){if(view==='front'){camera.azimuth=0;camera.elevation=.15}else if(view==='side'){camera.azimuth=Math.PI/2;camera.elevation=.15}else if(view==='top'){camera.azimuth=0;camera.elevation=Math.PI/2-.01}else if(view==='perspective'){camera={...initial,target:[...initial.target]}}drawFrame()}
@@ -77,6 +93,6 @@ export function createScene(canvas,{onSelect=()=>{},onError=()=>{}}={}){
  function context(e){e.preventDefault()}
  canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);canvas.addEventListener('wheel',wheel,{passive:false});canvas.addEventListener('contextmenu',context);
  const observer=typeof ResizeObserver==='function'?new ResizeObserver(()=>drawFrame()):null;observer?.observe(canvas);
- function dispose(){observer?.disconnect();for(const [name,fn] of [['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',up],['wheel',wheel],['contextmenu',context]])canvas.removeEventListener(name,fn);gl.deleteBuffer(cubeBuffer);gl.deleteBuffer(lineBuffer);gl.deleteProgram(program);labelLayer?.remove();last=null}
+ function dispose(){observer?.disconnect();for(const [name,fn] of [['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',up],['wheel',wheel],['contextmenu',context]])canvas.removeEventListener(name,fn);for(const item of pool){item.material.dispose();if(item.mode==='line')item.geometry.dispose()}cubeGeometry.dispose();renderer.dispose();labelLayer?.remove();last=null}
  return {render,setView,resetView,dispose};
 }
