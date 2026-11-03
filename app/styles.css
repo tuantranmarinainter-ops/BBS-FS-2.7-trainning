@@ -40,3 +40,39 @@ body[data-interface="bbs"] .view-tools button{background:#303030e8}
  body[data-interface="bbs"] #left>section:nth-child(2){order:3}
  body[data-interface="bbs"] #left>section:nth-child(3){order:2}
 }
+
+
+/* BBS 2.7 default surface ladder, derived from BBSSettings secondary #171b22
+   and its Oklab offsets; accent uses configurable default primary #ff3242.
+   Scoped to the BBS profile so the original theme remains unchanged. */
+body[data-interface="bbs"]{
+ --bbs-sunken:#090c13;--bbs-deep:#0d1118;--bbs-chrome:#12161d;
+ --bbs-base:#171b22;--bbs-raised:#1c2027;--bbs-divider:#24282f;
+ --bbs-primary:#ff3242;--bbs-active:#0088ff;
+ background:var(--bbs-sunken);color:#fff
+}
+body[data-interface="bbs"] header,body[data-interface="bbs"] .modebar,
+body[data-interface="bbs"] .mobile-tabs,body[data-interface="bbs"] footer{
+ background:var(--bbs-chrome);border-color:var(--bbs-divider);color:#fff
+}
+body[data-interface="bbs"] .panel{background:var(--bbs-base)}
+body[data-interface="bbs"] .panel section,body[data-interface="bbs"] .property,
+body[data-interface="bbs"] .dialog-head,body[data-interface="bbs"] .lesson-item{border-color:var(--bbs-divider)}
+body[data-interface="bbs"] button,body[data-interface="bbs"] select,
+body[data-interface="bbs"] input:not([type=checkbox]):not([type=range]){
+ background:var(--bbs-raised);border-color:var(--bbs-divider);color:#fff
+}
+body[data-interface="bbs"] button:hover:not(:disabled){background:#24282f;border-color:#aaa}
+body[data-interface="bbs"] button[aria-pressed=true],body[data-interface="bbs"] .primary{
+ background:rgba(255,50,66,.28);border-color:var(--bbs-primary)
+}
+body[data-interface="bbs"] .viewport,body[data-interface="bbs"] .timeline{background:var(--bbs-deep)}
+body[data-interface="bbs"] .viewport-head,body[data-interface="bbs"] .transport{background:var(--bbs-chrome);border-color:var(--bbs-divider)}
+body[data-interface="bbs"] .ruler{background:var(--bbs-sunken);border-color:var(--bbs-divider)}
+body[data-interface="bbs"] .lane{background:var(--bbs-deep);border-color:var(--bbs-divider)}
+body[data-interface="bbs"] .lane.selected{background:rgba(255,50,66,.18)}
+body[data-interface="bbs"] .lane-label{background:var(--bbs-base)}
+body[data-interface="bbs"] .key{background:#ccc;border-color:#fff}
+body[data-interface="bbs"] .key.selected{background:#fff;box-shadow:0 0 0 2px var(--bbs-active)}
+body[data-interface="bbs"] .view-tools button,body[data-interface="bbs"] dialog{background:var(--bbs-raised);border-color:var(--bbs-divider)}
+body[data-interface="bbs"] :focus-visible{outline-color:var(--bbs-primary)}
