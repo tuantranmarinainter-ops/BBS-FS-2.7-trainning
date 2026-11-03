@@ -8,7 +8,7 @@ const baseGroups=[{id:'position',label:'Position · vị trí và góc',properti
 const groups=[...baseGroups,...PROPERTY_GROUPS];
 let storageBlocked=false, loadWasCorrupt=false, guideOpen=true;
 let mode='sandbox',lessonId=null,stageId=null,learningMode='guided',progress={},identifiedRegions=[],events=[],history,selectedReplayId='den',selectedPartId='root',propertyId='x',groupId='position',keyId=null,playhead=0,draft=null,playing=false,lastFrame=0,saveTimer,conflict=false,scene;
-const persistence=createPersistence({onConflict:key=>{if(key===currentKey()){conflict=true;showConflict()}}});
+const persistence=createPersistence({validate:value=>validateProject(value?.project),onConflict:key=>{if(key===currentKey()){conflict=true;showConflict()}}});
 const currentKey=()=>mode==='sandbox'?'sandbox':`lesson:${lessonId}:${stageId||'default'}:${learningMode}`;
 const project=()=>history.project;
 const track=()=>findTrack(project(),selectedReplayId,propertyId,propertyOwner()==='form'?selectedPartId:null);
@@ -25,7 +25,7 @@ function loadMode(useSaved=true){pause();clearTimeout(saveTimer);const loaded=us
 function usableProject(p){return Array.isArray(p.replays)&&p.replays.length>0&&p.replays.every(r=>r.parts.some(part=>part.id==='root'))}
 function dropDraft(){if(draft){draft=null;notice('Giá trị chưa đặt key đã được bỏ')}}
 function invalidate(){if(mode==='lesson'){const key=`${lessonId}:${stageId||'default'}:${learningMode}`;if(progress[key]?.passed)progress[key]={...progress[key],passed:false,changed:true}}}
-function commit(next){history.commit(next);invalidate();draft=null;render();scheduleSave()}
+function commit(next){const validation=validateProject(next);if(!validation.valid)throw Error(validation.errors.join('; '));history.commit(next);invalidate();draft=null;render();scheduleSave()}
 function chooseTrack(id){dropDraft();propertyId=id;keyId=null;render()}
 function setTick(t){dropDraft();playhead=Math.max(0,Math.min(project().durationTicks,snapTick(t,$('#snap').checked)));keyId=null;render()}
 function getDefinition(){return getPropertyDefinition(propertyId)||{id:propertyId,label:propertyId,type:track()?.valueType||'number',step:'any'}}
@@ -67,3 +67,4 @@ $$('[data-panel]').forEach(b=>b.onclick=()=>{$$('main>.panel,main>.center').forE
 document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea,button,[contenteditable=true]')||document.querySelector('dialog[open]'))return;if(e.code==='Space'){e.preventDefault();$('#play').click()}else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();(e.shiftKey?$('#redo'):$('#undo')).click()}});document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();render()}});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);save();persistence.destroy()});
 try{scene=createScene($('#scene'),{onSelect:id=>{if(project().replays.some(r=>r.id===id)){dropDraft();selectedReplayId=id;selectedPartId='root';keyId=null;render()}},onError:error=>{$('#scene-error').hidden=false;$('#scene-error').textContent=`Không thể chạy WebGL: ${error?.message||error||'trình duyệt không hỗ trợ'}`}})}catch(error){$('#scene-error').hidden=false;$('#scene-error').textContent=`Không thể chạy WebGL: ${error.message}`}
 try{$('#extension-help').textContent=typeof describeExtensions()==='string'?describeExtensions():JSON.stringify(describeExtensions())}catch{}renderLessons();loadMode();requestAnimationFrame(frame);
+
