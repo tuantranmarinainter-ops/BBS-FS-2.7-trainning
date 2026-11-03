@@ -1,5 +1,5 @@
 # ĐẶC TẢ SẢN PHẨM — BBS FS 2.7 trainning
-Phiên bản tài liệu: 0.1 · Ngày: 03/11/2026
+Phiên bản tài liệu: 0.2 · Ngày: 03/11/2026
 Trạng thái: Bản đặc tả đề xuất để duyệt; không phải xác nhận ứng dụng đã hoàn thành.
 Nguồn yêu cầu: README.md và trao đổi trực tiếp của chủ dự án.
 Giai đoạn được yêu cầu hiện tại: viết đặc tả. Chưa triển khai thêm code, chưa xuất bản.
@@ -275,7 +275,7 @@ Giải quyết bằng đọc mã đúng mốc và thử thao tác trong game khi
 | Giai đoạn | Đầu ra | Trạng thái |
 |---|---|---|
 | P1 | Repo và khảo sát ban đầu | Đã có; còn V01–V06 |
-| P2 | SPEC.md v0.1 | Bản này, chờ duyệt |
+| P2 | SPEC.md v0.2 — đặc tả ba đợt | Bản này, chờ duyệt |
 | P3 | Mockup desktop và màn hình hẹp | Chưa thực hiện theo đặc tả |
 | P4 | Core, timeline, cảnh, lưu | Chưa thực hiện theo đặc tả |
 | P5 | 8 bài và bộ chấm | Chưa thực hiện theo đặc tả |
@@ -284,3 +284,377 @@ Giải quyết bằng đọc mã đúng mốc và thử thao tác trong game khi
 Bản HTML thử trước đây không phải nguồn chuẩn và chưa được nghiệm thu.
 Cổng triển khai: chủ dự án duyệt đặc tả, sau đó duyệt mockup trước khi hoàn thiện logic.
 Thay đổi phạm vi phải ghi quyết định và cập nhật đặc tả; không tự coi đợt 2/3 thuộc MVP.
+
+
+## 14. Kế hoạch toàn bộ các đợt — bổ sung v0.2
+Phạm vi “toàn bộ các đợt” trong tài liệu này là ba đợt đã có trong README: Đợt 1 (MVP), Đợt 2 và Đợt 3. P1–P6 ở mục 13 là các bước bàn giao, không phải sáu đợt tính năng. Các nội dung khảo sát thêm ở mục 22 không tự trở thành đợt đã cam kết.
+
+Yêu cầu ngày 03/11/2026: viết tiếp đặc tả cho toàn bộ các đợt. Yêu cầu này cho phép mở rộng tài liệu; không đồng nghĩa đã duyệt mockup, triển khai code hoặc xuất bản ứng dụng. Mục 1–13 tiếp tục là hợp đồng nền; mục 14–22 bổ sung cho các đợt sau. Nếu một quy tắc được mở rộng, mục bổ sung phải nêu rõ phạm vi áp dụng.
+
+| Đợt | Mục tiêu học | Phạm vi | Bài học | Cổng hoàn thành |
+|---|---|---|---|---|
+| D1 — Nền tảng | Chọn đúng đối tượng, tạo và kiểm tra chuyển động | F01–F11, mục 3.1 | L01–L08 | A01–A17; giải quyết các điểm chặn tương ứng V01–V06 |
+| D2 — Thuộc tính và cấu trúc | Phân biệt trạng thái, trang bị, biến, pose, transform và anchor | F12–F18, mục 16 | L09–L16 | A18–A27; V07–V12; hồi quy D1 |
+| D3 — Morph và dựng shot | Chọn tài sản phù hợp, phối hợp action và VFX theo loại morph | F19–F23, mục 17 | L17–L22 | A28–A36; V13–V16; hồi quy D1–D2 |
+
+Mỗi đợt đi qua: bằng chứng → đặc tả được duyệt → mockup được duyệt → triển khai → QA → bàn giao.
+Có thể phát hành preview thiếu tính năng nếu công khai giới hạn. Không gọi “hoàn tất đợt” khi bài bắt buộc còn bị chặn.
+Bài học không bị khóa vì điểm bài trước; chỉ khóa vì chưa đủ bằng chứng hoặc fixture không hỗ trợ.
+
+### 14.1 Mức độ trung thực
+Mỗi chức năng có hai đánh giá riêng:
+- Trạng thái sản phẩm: planned / implemented / tested / accepted.
+- Bằng chứng: danh sách source / docs / runtime / simulator / pending, kèm tham chiếu cụ thể.
+Một chức năng có thể vừa source vừa simulator; không gộp thành một dấu “đã xác minh”.
+Toàn bộ chức năng D2–D3 bên dưới hiện là planned; quy ước trainer là simulator; ánh xạ sang game là pending nếu chưa có biên bản đối chiếu.
+
+### 14.2 Đầu ra bắt buộc mỗi đợt
+- Danh mục chức năng, fixture, thuộc tính hỗ trợ và các giới hạn.
+- Mockup các trạng thái bình thường, không hỗ trợ, dữ liệu lỗi và chưa lưu.
+- Nội dung từng bài: mục tiêu, ví dụ, làm theo, tự làm, đáp án riêng, bộ chấm và cách áp dụng trong game.
+- Dữ liệu mẫu có phiên bản, kiểm thử lõi và báo cáo QA.
+- Bảng so sánh trainer/game với bằng chứng; danh sách lỗi và phần chưa chạy.
+- Gói chạy cục bộ và hướng dẫn mở chỉ khi đến bước triển khai; đặc tả này chưa tạo gói ứng dụng.
+
+## 15. Đợt 1 — phân rã triển khai MVP
+Đợt 1 giữ toàn bộ hành vi và số liệu ở mục 4–11; không thay bằng bản demo chỉ có hình minh họa.
+
+| Gói | Nội dung | Phụ thuộc | Điều kiện bàn giao |
+|---|---|---|---|
+| D1.01 | Hồ sơ V01–V06; registry fixture và track | Nguồn S01–S08 | Ghi rõ điều xác minh được, điều còn pending; không tự đóng V02/V03 |
+| D1.02 | Mockup desktop, 1024×768, màn hình hẹp; trạng thái chọn và nháp | D1.01 cho nhãn có bằng chứng | Người dùng duyệt; không có nút giả |
+| D1.03 | Project, validator, evaluator, command và Undo/Redo | Đặc tả nền được duyệt | Track rỗng/1 key/nhiều key/biên/nội suy hoạt động đúng |
+| D1.04 | Viewport, Replay, Body parts, inspector | D1.02–D1.03; V02/V03 tương ứng | Đổi lựa chọn không sửa nhầm; dữ liệu nháp phân biệt với key |
+| D1.05 | Timeline, scrub, playback, zoom, snap và kéo key | D1.03–D1.04 | A03–A09, A14–A15 |
+| D1.06 | Lưu, phục hồi, nhập/xuất trainer JSON, xung đột tab | D1.03 | A10–A11; không mất bài đang mở khi import lỗi |
+| D1.07 | L01–L08, guided/independent, bộ chấm và đáp án riêng | D1.04–D1.06; V02 cho L04 | A12–A13, A17; bài sai không đạt giả |
+| D1.08 | QA, đối chiếu game, gói bàn giao | Các gói trên | A01–A17 có kết quả và bằng chứng; giới hạn còn lại được công bố |
+
+Các lớp trạng thái phải tách biệt: project đã lưu key, preview nháp, lựa chọn UI, kết quả chấm và lịch sử từng đạt.
+Mọi thay đổi dữ liệu làm kết quả hiện tại cần kiểm tra lại; camera quan sát, zoom và chọn track không làm mất kết quả.
+Khi đổi bài, bài cũ phải được lưu hoặc báo lưu lỗi; không tự xóa vì chuyển sang sandbox.
+
+## 16. Đợt 2 — States, Hotbar, Equipment, Variables, Pose, Transform, Anchor
+### 16.1 Phạm vi và khả năng theo fixture
+| ID | Nhóm | Người học thực hiện | Điều kiện hỗ trợ |
+|---|---|---|---|
+| F12 | States | Đặt trạng thái rời rạc theo thời gian, quan sát thay đổi | Registry khai báo tên, kiểu và miền giá trị đã đối chiếu |
+| F13 | Hotbar | Chọn ô và quan sát vật đang cầm | Fixture humanoid của trainer; ánh xạ game chờ V08 |
+| F14 | Equipment | Gán/xóa vật ở slot hỗ trợ | Slot và item có ID; không coi mọi morph đều có trang bị |
+| F15 | Variables | Đặt biến có kiểu, quan sát consumer minh họa | Chỉ biến được fixture khai báo; không thực thi mã nhập vào |
+| F16 | Pose | Chọn bộ phận rig mẫu và chỉnh tư thế | Fixture rig-lite riêng, không suy ra xương từ Body parts |
+| F17 | Transform | Chỉnh local translation/rotation/scale của thành phần | Có local axes và base transform rõ ràng |
+| F18 | Anchor | Gắn thành phần vào anchor và quan sát quan hệ cha–con | Đồ thị hợp lệ, không chu trình; chờ V12 để dạy tương đương game |
+
+Tên trạng thái, slot và property thực trong BBS chỉ đưa vào tài liệu học sau V07–V12. Những tên ví dụ dưới đây là ID nội bộ của trainer, không phải tên API mod.
+
+### 16.2 Hợp đồng thao tác chung
+Giữ chuỗi chọn Replay → thành phần → nhóm → thuộc tính → tick → preview → Đặt key.
+- Dropdown/switch/resource picker phục vụ giá trị rời rạc; trường số dùng cho numeric.
+- State, slot, item và enum giữ giá trị key trước; không chạy Linear/Sine giữa hai ID.
+- Xóa key khác với chọn giá trị rỗng. Xóa key khôi phục đường đánh giá track; giá trị null chỉ hợp lệ cho property cho phép bỏ trang bị.
+- Inspector hiển thị kiểu dữ liệu, đơn vị, baseValue và lý do không hỗ trợ.
+- Track không hỗ trợ bị ẩn trong danh sách mặc định; panel khả năng vẫn giải thích vì sao không có.
+- Mọi thay đổi hợp lệ đi qua command; Undo/Redo phục hồi cả tham chiếu và giá trị.
+- Khi playback, thao tác chỉnh dừng phát trước khi tạo nháp. Không tự ghi một chuỗi key theo mỗi frame.
+
+### 16.3 States, Hotbar và Equipment
+Fixture humanoid-lite có trạng thái trainer.state với enum neutral/crouch; hotbar có 9 ô, UI ghi 1–9, dữ liệu lưu 0–8.
+Đây là quy ước mô phỏng để viết bài, chưa khẳng định tên enum hay ánh xạ hotbar trong game.
+Catalog ban đầu dùng hình khối tự tạo: prop-block, prop-stick, prop-shield. Không cho nhập lệnh Minecraft.
+
+- Hotbar lưu cấu hình slot item trong fixture/project; track activeSlot chọn ô theo thời gian.
+- Equipment MVP D2 hỗ trợ slot offhand và head trên fixture; slot không hỗ trợ bị từ chối khi nhập.
+- Vật mainhand lấy từ activeSlot; không đồng thời cho equipment ghi đè mainhand trong fixture này.
+- Ô trống làm bàn tay trống; không tự lấy item ở ô gần nhất.
+- Thay item trong catalog không âm thầm đổi mọi fixture: asset ID và version phải ổn định.
+- State chỉ đổi pose minh họa đã khai báo; không suy diễn chạy vật lý, va chạm hoặc AI.
+- State không tự tạo key Position. Cúi người không làm root di chuyển nếu bài yêu cầu giữ root.
+
+### 16.4 Variables
+Đợt 2 chỉ hỗ trợ biến number/boolean/enum khai báo sẵn trong fixture, có default và miền giá trị.
+Ví dụ trainer.energy thuộc [0,1] điều khiển thanh năng lượng minh họa trong viewport; đây là consumer của trainer.
+- Sửa biến không ảnh hưởng bất kỳ đối tượng nào ngoài consumer được khai báo.
+- Biến number cho phép Linear/Constant/Sine InOut; boolean/enum chỉ Constant.
+- Không có eval, JavaScript, biểu thức tự do hoặc gọi mạng.
+- Ngoài miền: báo lỗi và giữ giá trị cũ, không clamp âm thầm.
+- Đổi loại/đổi tên biến có dữ liệu nằm ngoài D2; import chứa biến không biết bị từ chối.
+- Bài phải chỉ rõ biến nào được đọc bởi thành phần nào; không dạy rằng mọi biến đều tự tạo hiệu ứng.
+
+### 16.5 Pose và Transform
+Fixture rig-lite dùng root và các node mẫu torso, head, armL, armR, legL, legR. Đây là rig đào tạo, không phải Mixamo 65 xương và không phải cam kết rig của BBS.
+Body parts tiếp tục là cây form; danh sách bone/pose có panel riêng.
+- Hiển thị local axes của node được chọn, rest pose và thao tác đặt lại nháp.
+- Translation dùng block, rotation nhập độ, scale không có đơn vị.
+- D2 dùng các track scalar riêng cho từng trục; không ngầm đổi sang quaternion hoặc blend pose.
+- Quy ước renderer trainer dùng ma trận cột: local = T × Rz × Ry × Rx × S; world = parentWorld × local.
+- Góc nội suy số trực tiếp theo từng trục, không tự chọn cung ngắn. Gắn nhãn simulator; không áp quy tắc này cho L04 trước V02.
+- Scale fixture cho phép [0.1,4] mỗi trục; không hỗ trợ scale âm hoặc 0 trong D2.
+- Base local transform được áp trước delta pose: local = baseLocal × poseDelta. UI phải phân biệt base và delta.
+- State crouch chọn base pose; poseDelta áp sau state. Tắt state khôi phục base trung tính và giữ nguyên delta.
+- Reset pose đưa delta về neutral trong preview; chỉ ghi key khi bấm Đặt key.
+- Không có IK, constraints, retargeting, vật lý hoặc chỉnh trọng số skin.
+
+### 16.6 Anchor
+Anchor của trainer là socket cố định trong fixture, có transform và ID; quan hệ attachment là cấu hình cảnh, không keyframe trong D2.
+- Chọn đối tượng gắn → chọn Replay/node/anchor đích → xem trước → Xác nhận gắn.
+- Gắn theo local offset, không hứa giữ nguyên vị trí thế giới; preview phải hiển thị vị trí sau gắn trước xác nhận.
+- Công thức worldAttached = worldTargetNode × anchorLocal × attachmentOffset.
+- Không gắn vào chính mình, con của mình, hoặc đối tượng không tồn tại. Validator phát hiện chu trình trước commit.
+- D2 không cho scale thay đổi trên đường tổ tiên của anchor; hiện lý do. Quy tắc này tránh decomposition mơ hồ khi tháo.
+- Tháo giữ world transform tại playhead bằng cách chuyển thành baseTransform mới; thao tác chỉ hợp lệ với prop không có transform track.
+- Prop đã có transform track không được gắn/tháo trong D2; hướng dẫn dùng prop mới, không tự xóa key.
+- Replay/part có đối tượng phụ thuộc không được xóa cho đến khi tháo phụ thuộc; không cascade delete.
+- Undo một thao tác gắn/tháo phục hồi nguyên quan hệ, base transform và selection hợp lệ.
+
+### 16.7 Bài tập D2
+Các bài độc lập, duration 100 tick trừ L16 là 120; mỗi bài có đủ vòng học ở mục 6.
+
+| Bài | Fixture và nhiệm vụ tự làm | Bộ chấm bắt buộc |
+|---|---|---|
+| L09 States | humanoid-lite: neutral tại 0, crouch tại 20, neutral tại 60 | 19.9/20/59.9/60; root giữ nguyên |
+| L10 Hotbar | slot 1 chứa prop-block, slot 2 chứa prop-stick; chọn 1 tại 0, 2 tại 40 | UI 1/2 ánh xạ data 0/1; item đúng, không đổi offhand |
+| L11 Equipment | offhand trống tại 0, prop-shield tại 30, trống tại 70 | 29.9/30/69.9/70; mainhand giữ nguyên |
+| L12 Variables | trainer.energy: (0,0),(40,1), Linear | tick 20 = 0.5; đúng consumer; root không đổi |
+| L13 Pose | armR rotation X delta: (0,0),(30,60),(60,0), Linear | tick 15/30/45 = 30/60/30 độ; armL và root không đổi |
+| L14 Transform | prop local X: (0,0),(40,2); scale giữ (1,1,1) | tick 20 local X=1; world position tính đúng theo parent của fixture |
+| L15 Anchor | prop mới gắn vào socket handR, offset zero; đổi pose tay | quan hệ đúng; world prop khớp công thức tại 0/20/40; không kiểm tra bằng ảnh đơn thuần |
+| L16 Tổng hợp | 120 tick: đổi slot tại 40; crouch 60–80; offhand shield 20–100; root đứng yên | đúng biên từng đoạn và các track giữ nguyên; không hướng dẫn từng click |
+
+Các bài L09–L15 có chế độ mẫu và làm theo; đáp án L16 mở riêng. Khi chưa giải quyết bằng chứng tương ứng, chỉ cung cấp bài mô phỏng gắn nhãn; phần “áp dụng trong game” chưa được xác nhận và không tính đạt toàn đợt.
+
+## 17. Đợt 3 — Model, Texture, Actions, VFX và loại morph
+### 17.1 Khả năng và catalog
+| ID | Chức năng | Đầu ra |
+|---|---|---|
+| F19 | Model | Chọn mẫu từ catalog đã đóng gói; xem khả năng và rig đi kèm |
+| F20 | Texture | Đổi texture tương thích material slot; khôi phục mặc định |
+| F21 | Actions | Đặt clip hành động lên lane theo thời gian; tua có kết quả xác định |
+| F22 | VFX | Đặt hiệu ứng mẫu, điều chỉnh tham số hữu hạn; tua lùi tái tạo được |
+| F23 | Theo loại morph | Bài học và track lọc theo capability, không chỉ dựa vào tên morph |
+
+D3 dùng các profile trainer: humanoid-lite, rig-lite, static-prop, effect-lite.
+Tên morph thật và danh sách thuộc tính phải bổ sung từ V13; các profile này không được ghi như danh sách chính thức của BBS.
+Catalog gồm assetId, version, loại, đường dẫn tương đối trong gói, hash, license/source, thumbnail, capabilities và compatibilityId.
+Không nhập model tùy ý, không tải tài sản từ URL người học và không xử lý BOBJ ở D3.
+
+### 17.2 Model và Texture
+Model/texture trong D3 là cấu hình của Replay, không phải track chuyển model/texture theo tick.
+- Chọn model mở preview riêng; thay thật phải có bảng tác động tới parts, tracks, actions, equipment và attachments.
+- Cho thay trực tiếp khi cùng compatibilityId và mọi tham chiếu vẫn hợp lệ.
+- Khác compatibilityId mà đã có dữ liệu phụ thuộc: chặn thay, cho tạo Replay mới. Không tự retarget hoặc xóa key.
+- Undo thay model khôi phục model, texture và cấu hình trước đó.
+- Texture chỉ chọn trong catalog, đúng material slot và compatibilityId; UV thuộc asset.
+- Asset thiếu khi mở project: hiển thị lỗi có ID, giữ nguyên dữ liệu để xuất dự phòng, không chấm đạt với placeholder.
+- Đổi texture không đổi rig, key hoặc lesson progress ngoài việc đánh dấu cần kiểm tra lại nếu asset là một rule của bài.
+- Thông báo tải lỗi có nút thử lại; không dùng fallback rồi báo model đã tải đúng.
+
+### 17.3 Actions
+Action là clip mẫu của trainer; tên/ý nghĩa action thật trong BBS chờ V14.
+Mỗi clip khai báo duration, rig compatibility, các node bị tác động và sampling function.
+Một action instance gồm id, replayId, clipId, startTick, sourceIn, sourceOut, speed.
+- speed hữu hạn thuộc [0.25,4]; sourceIn >= 0, sourceOut > sourceIn và không vượt clip.duration.
+- endTick = startTick + (sourceOut-sourceIn)/speed; phải nằm trong duration dự án.
+- Khoảng hoạt động [startTick,endTick); ngoài khoảng trả base pose cộng poseDelta.
+- sourceTick = sourceIn + (projectTick-startTick) × speed.
+- Không hỗ trợ reverse, blend, action loop hoặc nhiều action chồng nhau trên cùng Replay ở D3.
+- Khi tạo/kéo/đổi speed gây overlap: từ chối toàn thao tác, giữ clip cũ và báo clip xung đột.
+- Hai clip có end/start bằng nhau hợp lệ; tại biên chỉ clip sau hoạt động.
+- Action clip thay base pose trên các node khai báo; state base áp cho node còn lại; poseDelta từ D2 áp sau kết quả đó.
+- Root motion tắt trong các clip mẫu; Position track vẫn là nguồn vị trí Replay.
+- Thay source range/speed không tự dời clip sau. Một thao tác là một bước Undo.
+- Scrub gọi trực tiếp sampler; không cần phát từ đầu để có pose đúng.
+
+### 17.4 VFX
+Hiệu ứng mẫu gồm flash và burst bằng hình học đơn giản tự tạo; không cam kết renderer giống particle của Minecraft.
+Instance gồm id, effectId, replayId, partId/anchorId tùy chọn, startTick, durationTicks, seed và params.
+- Flash có intensity [0,1], color RGB mỗi thành phần [0,1]; burst có count nguyên [1,100], lifetimeTicks [1,40].
+- durationTicks > 0, nằm trọn trong project; burst.durationTicks phải >= lifetimeTicks.
+- D3 tối đa 20 effect instance và 500 hạt đang sống. Cấu hình vượt ngân sách bị từ chối; không cắt bớt để chấm đạt.
+- seed nguyên không âm 32-bit; cùng project/tick/seed sinh cùng trạng thái.
+- Burst sinh một đợt ở startTick. Hạt được tính từ tuổi tuyệt đối và seed, không tích lũy theo frame.
+- Hiệu ứng hoạt động trong [startTick,startTick+durationTicks); đúng cuối phải biến mất.
+- VFX gắn anchor dùng world anchor hiện tại; hiệu ứng burst mẫu dùng local space, nên đi cùng anchor suốt vòng đời. Đây là lựa chọn trainer.
+- Visible=false trên đối tượng gắn làm VFX ẩn nhưng tuổi vẫn tiến theo timeline; hiện lại không phát lại từ đầu.
+- Pause đóng băng thời gian hiệu ứng; scrub lùi hoặc loop playback không nhân đôi hạt.
+- Thay seed/params là command; không tự đổi seed mỗi lần bấm Play.
+- Giảm chất lượng render chỉ giảm chi phí hiển thị; dữ liệu evaluator và bộ chấm không thay đổi.
+
+### 17.5 Bài tập D3
+| Bài | Nhiệm vụ | Điều kiện đạt |
+|---|---|---|
+| L17 Model/capability | Chọn rig-lite cho bài Pose, xem vì sao static-prop không hỗ trợ Pose | Đúng asset/capability; lựa chọn không hỗ trợ phải bị từ chối, không tự chuyển fixture |
+| L18 Texture | Đổi texture-compatible của prop sang mẫu blue-check trong catalog | Đúng asset/material slot; transform/key không đổi; Undo phục hồi |
+| L19 Action | Clip wave mẫu dài 40 tick; đặt start=20, source 0–40, speed=1 | Bắt đầu 20, kết thúc 60; sample 40 tương ứng source 20; 60 về base |
+| L20 Timing action | Clip dài 40, start=20, source 0–40, speed=2 | Kết thúc 40; tick 30 đọc source 20; root không trôi |
+| L21 VFX | Burst start=40, duration=20, lifetime=20, count=20, seed=7 | Trước 40 không có hạt; 40 sinh đúng; 60 hết; tua 50→30→50 cho cùng trạng thái |
+| L22 Shot tổng hợp | 120 tick: Đen đi X -2→1 trong 0–40; wave 40–80; Gỗ Xưa ẩn 90–110; burst tại Đen 60–80; texture theo đề | Quỹ đạo và khoảng clip/VFX đúng; không overlap; asset đúng; không nhầm Replay |
+
+L22 là bài tự làm; rubric chia chuyển động, action, VFX, visibility và tính toàn vẹn dữ liệu. Chỉ passed khi mọi nhóm bắt buộc đạt, không lấy tổng điểm để bỏ qua nhóm sai.
+Tất cả bài vẫn có phần chuyển sang game; phần chưa được xác minh phải ghi cụ thể thao tác còn thiếu bằng chứng.
+
+## 18. Hợp đồng dữ liệu mở rộng và khả năng tương thích
+### 18.1 Phiên bản
+Đề xuất schemaVersion 1 cho D1, 2 cho D2, 3 cho D3; đây là kế hoạch schema, chưa phải các phiên bản đã phát hành.
+Không thay âm thầm ý nghĩa field cũ. File xuất có format="bbs-fs-trainer", schemaVersion và producerVersion; không đổi đuôi thành .bobj.
+Phần format/producerVersion là bổ sung cho Project ở mục 8, áp dụng từ lần triển khai đầu tiên.
+
+| Dữ liệu bổ sung | Trường và ràng buộc |
+|---|---|
+| FixtureDefinition | id, version, formParts, poseNodes, anchors, propertyDefinitions, capabilities, defaults |
+| PropertyDefinition | id, valueType, unit, allowedValues/range, nullable, interpolationModes, evidenceIds |
+| Replay D2 | fixtureVersion, hotbarSlots, variableDefinitions, attachment tùy chọn; cấu hình equipment base theo slot |
+| Track D2 | targetKind=formPart/poseNode/variable/replay; targetId; propertyId vẫn xác định kiểu |
+| Attachment | targetReplayId, targetNodeId, anchorId, offsetTransform; kiểm tra chu trình toàn graph |
+| Project D3 | catalogVersion; actions[]; effects[]; assets tham chiếu catalog đóng gói |
+| Replay D3 | modelAssetId, textureBindings theo materialSlotId |
+| ActionInstance | Các field mục 17.3; endTick được suy ra, không lưu hai nguồn chân lý |
+| EffectInstance | Các field mục 17.4; params validate theo effectId |
+| EvidenceRecord | id, featureId, kind, sourceRef, commit/version, observation, limitation, checkedAt |
+| ValidationResult | lessonId, lessonVersion, ruleSetVersion, projectRevision, passed, rules[], checkedAt |
+
+### 18.2 Thứ tự đánh giá một tick
+1. Xác thực cấu hình, fixture và tài sản trước khi mở project.
+2. Đọc Position/Visible và các track rời rạc của Replay.
+3. Tính state base, action pose, rồi poseDelta theo mục 16–17.
+4. Tính local/world transforms theo thứ tự cha trước con.
+5. Giải attachment graph theo topo; cập nhật equipment và consumer biến.
+6. Tính VFX từ tick tuyệt đối/seed và visibility.
+7. Renderer và bộ chấm cùng dùng kết quả evaluator này.
+
+Evaluator là hàm thuần theo project, fixture/catalog version và tick; không đọc DOM, đồng hồ hệ thống hoặc random không seed.
+Nếu graph/asset không hợp lệ, trả lỗi; không một phần render đúng rồi vẫn báo bài đạt.
+
+### 18.3 Nhập, migration, lưu
+- D2 đọc schema 1 bằng migration copy sang schema 2; D3 đọc 1/2 qua chuỗi migration tuần tự.
+- Migration giữ ID, tick, value, interpolation, baseValue, nhãn và các trục cũ; field mới nhận mặc định trung tính.
+- Track cũ chuyển targetKind=formPart, targetId=partId; không tự chuyển Body parts thành bone.
+- Giữ bản gốc tới khi validate và lưu bản mới thành công. Migration lỗi không thay project đang mở.
+- Schema tương lai, capability không hỗ trợ hoặc asset ID không có: từ chối mở để chỉnh, cho giữ/tải file gốc.
+- Không cung cấp downgrade mất dữ liệu; export luôn theo schema hiện hành.
+- Progress cũ giữ lịch sử từng đạt; lessonVersion/ruleSetVersion thay đổi làm currentValidation cần kiểm tra lại.
+- Undo history chỉ trong phiên, không bắt buộc serialize vào project.
+- Giữ giới hạn 2 MB, 20 Replay, 200 track, 5.000 key từ mục 9 cho cả ba đợt; D3 thêm tối đa 100 action instance và 20 effect instance.
+- Không nhúng binary texture/model vào JSON; các tài sản được đóng gói riêng.
+- Parser kiểm tra kích thước trước parse; độ sâu cấu trúc tối đa 32, chuỗi tối đa 1.024 ký tự; từ chối khóa __proto__, prototype, constructor trong dữ liệu nhập.
+- Chỉ dựng đối tượng theo allowlist schema; không merge trực tiếp object nhập vào cấu hình ứng dụng.
+
+## 19. Ma trận nghiệm thu bổ sung
+Mỗi test cần fixture đầu vào, thao tác, kết quả mong đợi và bằng chứng đầu ra. Tất cả dòng sau là tiêu chí dự kiến, chưa phải kết quả PASS.
+
+| ID | Đợt | Kịch bản | Kết quả bắt buộc |
+|---|---|---|---|
+| A18 | D2 | State tại 19.9/20/60 | Chuyển đúng biên; Position giữ nguyên |
+| A19 | D2 | Slot UI 1/9, data 0/8; ô trống | Không lệch chỉ số; ô trống không tự lấy item |
+| A20 | D2 | Equipment null, item sai, slot sai | Null hợp lệ khi cho phép; dữ liệu sai không commit |
+| A21 | D2 | Variable sai kiểu/ngoài miền | Giữ dữ liệu cũ; consumer đúng đối tượng |
+| A22 | D2 | Pose armR khi root/state thay đổi | Đúng thứ tự base × delta; armL không bị sửa |
+| A23 | D2 | Parent xoay và child dịch local X | World transform đúng công thức; phân biệt local/world |
+| A24 | D2 | Anchor tự trỏ/chu trình/đích mất | Từ chối nguyên thao tác; không treo renderer |
+| A25 | D2 | Gắn/tháo/Undo và prop có key | Prop hợp lệ phục hồi chính xác; prop có track bị chặn |
+| A26 | D2 | Mở schema 1, lỗi migration, storage đầy | Bảo toàn bản gốc, ID/key; báo chưa lưu |
+| A27 | D2 | L09–L16 sai một thuộc tính bắt buộc | Không đạt; báo đúng target/tick/giá trị |
+| A28 | D3 | Thay model tương thích/không tương thích | Giữ dữ liệu hợp lệ hoặc chặn; không xóa key ngầm |
+| A29 | D3 | Texture sai slot/asset mất | Thông báo đúng ID; không dùng placeholder để đạt |
+| A30 | D3 | Action speed 0/NaN/overlap/clip biên | Từ chối sai; end==start clip sau hợp lệ |
+| A31 | D3 | Scrub action từ hai hướng | Cùng tick cho cùng pose; Position không bị root motion |
+| A32 | D3 | Action + state + poseDelta | Đúng precedence và node mask ở mục 17.3 |
+| A33 | D3 | VFX seed cố định, pause và tua lùi | Không nhân đôi; đúng biên kết thúc; kết quả xác định |
+| A34 | D3 | Vượt ngân sách hạt/instance | Từ chối trước commit, không cắt dữ liệu âm thầm |
+| A35 | D3 | Migration 1→3, 2→3; import sai catalog | Giữ ngữ nghĩa D1/D2; lỗi không phá bài đang mở |
+| A36 | D3 | L17–L22 và hồi quy L01–L16 | Mẫu đúng đạt; mẫu sai từng rule không đạt giả |
+
+### 19.1 Chấm chuyển động tương đương
+Kiểm tra vài tick chỉ là tối thiểu, không đủ chứng minh toàn quỹ đạo.
+- Với số/nội suy: so trên hợp các mốc key của bài làm và đáp án; kiểm tra biên và sai lệch cực đại của từng đoạn.
+- Dùng nghiệm/đánh giá có chặn sai số cho Linear/Constant/Sine; nếu chưa có thuật toán bảo đảm, bài đó giới hạn cấu trúc key được chấp nhận và ghi rõ trong đề.
+- Không dùng lấy mẫu thưa rồi tuyên bố hỗ trợ mọi cấu trúc key tương đương.
+- Với boolean/enum: so các khoảng hằng số và mốc chuyển của cả hai tập key.
+- Action/VFX: kiểm tra cấu hình, khoảng hoạt động và sampler; không chỉ dựa vào thumbnail.
+- Với invariant như root đứng yên: kiểm tra toàn khoảng, kể cả key thừa.
+
+### 19.2 QA giao diện và hiệu năng
+- Kiểm tra 1366×768, 1920×1080, 1024×768 và chế độ tab hẹp; inspector/hướng dẫn không che nút đặt key.
+- Kiểm tra focus, label, tương phản, thao tác bàn phím và lỗi nhập liệu cho cả dropdown/picker.
+- Mất WebGL/context, asset tải lỗi, storage lỗi: hiện trạng thái và giữ dữ liệu để xuất khi có thể.
+- Đo fixture bài học và fixture giới hạn dữ liệu riêng; ghi CPU/GPU/RAM, OS, browser, kích thước viewport, số key/action/hạt.
+- Mục tiêu dưới 100 ms đo từ thao tác đến cập nhật hiển thị, báo p95 của tối thiểu 100 thao tác.
+- Mục tiêu 60 fps đo playback liên tục 60 giây sau warm-up; ghi median/p95 frame time, không chỉ FPS trung bình.
+- Cả mục tiêu và kết quả đo phải ghi rõ điều kiện; không khẳng định hỗ trợ mọi máy có 32 GB RAM.
+- Bản preview chưa đạt hiệu năng phải ghi giới hạn; không giảm độ chính xác evaluator để đạt số FPS.
+- Toàn bộ runtime trong Minecraft hiện NOT_RUN; chỉ đổi trạng thái khi có bằng chứng thực tế.
+
+## 20. Kế hoạch triển khai D2–D3 và hồ sơ bàn giao
+| Gói | Công việc | Phụ thuộc | Nghiệm thu chính |
+|---|---|---|---|
+| D2.01 | Xác minh V07–V12, capability registry, mockup các picker | Core D1 ổn định | Bảng hỗ trợ và điểm chưa xác minh |
+| D2.02 | Schema 2, migration, discrete evaluator, Hotbar/Equipment/Variables | D2.01 và mockup duyệt | A18–A21, A26 |
+| D2.03 | Pose, Transform, local/world và Anchor graph | D2.02; V10–V12 tương ứng | A22–A25 |
+| D2.04 | L09–L16, bộ chấm và hướng dẫn áp dụng | D2.02–D2.03 | A27; hồi quy A01–A17 |
+| D2.05 | QA và gói D2 | D2.04 | A18–A27; giới hạn và bằng chứng |
+| D3.01 | V13–V16, asset catalog/license và mockup Actions/VFX | D2 và đặc tả D3 duyệt | Catalog/khả năng/nguồn rõ ràng |
+| D3.02 | Schema 3, migration, model/texture picker | D3.01 | A28–A29, A35 |
+| D3.03 | Action lane, sampler, collision, Undo | D3.02 | A30–A32 |
+| D3.04 | VFX xác định theo tick/seed và ngân sách | D3.02, transform D2 | A33–A34 |
+| D3.05 | L17–L22 và shot tổng hợp | D3.03–D3.04 | A36 |
+| D3.06 | QA toàn lộ trình và gói D3 | D3.05 | A01–A36; báo cáo đối chiếu |
+
+Cấu trúc file dự kiến khi triển khai, chưa phải file đã tồn tại:
+- docs/evidence/: hồ sơ phiên bản, track, ảnh và biên bản runtime.
+- docs/mockups/: giao diện từng đợt và quyết định duyệt.
+- src/core/: schema, validator, evaluator, transforms, commands.
+- src/editor/: timeline, inspector, selectors và các picker.
+- src/scene/: renderer, fixture, action/VFX samplers.
+- src/lessons/ và fixtures/: bài, rubric, mẫu đúng/sai có version.
+- src/persistence/: migration, storage, import/export.
+- tests/: unit lõi, integration dữ liệu, UI và fixture chấm bài.
+- docs/reports/: báo cáo theo gói và tổng hợp từng đợt.
+Cây này là đề xuất phân vùng trách nhiệm, không buộc chọn framework trước khi duyệt mockup.
+
+Mỗi gói triển khai đi trên nhánh riêng, PR có phạm vi và phụ thuộc rõ; không tự merge.
+Tên đề xuất: docs/dN-spec-..., feat/dN-NN-..., fix/dN-NN-...; tên chính thức được chốt khi mở việc.
+Nếu phụ thuộc chưa vào main, phải ghi rõ nhánh nền/PR phụ thuộc; không tuyên bố nhánh độc lập từ main khi chưa đúng.
+REPORT của mỗi gói ghi: commit nền/đầu, file thay đổi, yêu cầu đáp ứng, lệnh thực chạy, PASS/FAIL/NOT_RUN, môi trường, bằng chứng và lỗi còn lại.
+Không ghi PASS cho lệnh chưa chạy hoặc biến checklist thành bằng chứng test.
+
+## 21. Danh sách xác minh mở rộng và quyết định còn chờ
+| Mã | Cần xác minh bằng nguồn và/hoặc game | Chặn phần nào |
+|---|---|---|
+| V07 | Tên States, kiểu giá trị, default, cách giữ trạng thái theo tick | Ánh xạ và hướng dẫn game F12 |
+| V08 | Slot Hotbar/Equipment, thứ tự ưu tiên và item representation | F13–F14 tương đương game |
+| V09 | Scope/kiểu Variables, consumer và cơ chế biểu thức thật | Phần áp dụng F15; trainer không chạy biểu thức |
+| V10 | Pose node, đơn vị góc, rest pose và quan hệ với Body parts | Ánh xạ F16 |
+| V11 | Thứ tự Transform, local/world, rotation, scale và góc biên | Ánh xạ F17 |
+| V12 | Anchor/socket, attachment, giữ world hay local khi gắn/tháo | Ánh xạ F18 |
+| V13 | Loại morph, khả năng Model/Texture, slot vật liệu và tương thích | Ánh xạ F19–F20/F23 |
+| V14 | Actions là clip/state/event gì theo từng morph; timing và ưu tiên | Ánh xạ F21 |
+| V15 | Loại VFX, tham số, seed, local/world space và visibility | Ánh xạ F22 |
+| V16 | Đối chiếu shot D3 đầu/cuối/biên và phối hợp hai Replay trong game | Nghiệm thu phần chuyển từ trainer sang game |
+
+Mỗi V có owner khi bắt đầu triển khai, trạng thái open/in-progress/resolved, commit/JAR mục tiêu, kết quả quan sát và người kiểm tra.
+Resolved phải có bằng chứng đủ cho đúng tuyên bố; đọc source không thay thế việc thử runtime.
+S08 chưa có trong repo: phải thu thập lại hoặc nhận ảnh được phép dùng trước nghiệm thu độ giống giao diện. Không dựng ảnh giả rồi coi là ảnh gốc.
+Không đưa thông tin định danh/tài sản riêng trong ảnh vào repo công khai nếu chưa được phép.
+
+Quyết định thiết kế đã đề xuất trong v0.2:
+- Giữ ba đợt, tổng 22 bài; D1 vẫn chỉ có 8 bài.
+- D2/D3 dùng catalog và fixture hữu hạn để kiểm chứng được; không nhập tài sản tùy ý.
+- Mở rộng schema theo đợt, không đổi nghĩa định dạng trainer thành định dạng mod.
+- Những giới hạn action/anchor/pose được ghi là simulator; cần duyệt cùng mockup.
+Đây là quyết định đề xuất để duyệt, không ghi là người dùng đã chấp thuận chi tiết.
+
+## 22. Nội dung ngoài ba đợt và điều kiện mở rộng
+| Nhóm | Trạng thái | Cần có trước khi viết đặc tả triển khai |
+|---|---|---|
+| Keyframe loop, motion offset | Có nhắc trong tài liệu 2.7; chưa thuộc D1–D3 | Chốt ngữ nghĩa biên, offset tích lũy, loại track, Undo và bài học; không nhầm Loop playback |
+| Multi-select/duplicate key | Backlog | Chọn vùng, trùng tick, paste offset và command nguyên tử |
+| Camera theo clip | Khảo sát riêng | Track camera thật, góc nhìn/FOV, chuyển shot và bộ chấm |
+| IK, physics, constraints | Ngoài phạm vi | Solver, tính xác định và chi phí hiệu năng |
+| Model editor/UV | Ngoài phạm vi | Pipeline tài sản, bản quyền và định dạng |
+| Import BOBJ, xuất film BBS | Ngoài phạm vi | Định dạng/schema chuẩn, fixture thật, round-trip trong đúng bản game |
+| FBX/Mixamo/iClone/Blender | Dự án pipeline riêng | Mapping rig, đơn vị, root motion, quyền dùng asset và xuất/nhập kiểm chứng |
+| Thu âm/xuất video | Ngoài phạm vi | Đồng bộ audio, codec, tài nguyên và quyền media |
+| Tài khoản/backend/AI | Không cần cho lộ trình hiện tại | Nhu cầu mới được duyệt, mô hình dữ liệu và vận hành |
+
+Hoàn thành ba đợt nghĩa là hoàn thành phòng tập theo phạm vi trên, không có nghĩa thay thế Film Editor hay xuất được animation vào Minecraft.
+Mọi mở rộng phải có yêu cầu, bằng chứng, bài tập, test và cổng duyệt riêng trước khi đưa vào cam kết.
