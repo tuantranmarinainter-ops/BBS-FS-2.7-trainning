@@ -84,3 +84,33 @@ test('evaluation treats special object names as data, never prototypes', () => {
   assert.equal(Object.getPrototypeOf(state['__proto__'].parts['__proto__']), null);
   assert.equal({}.polluted, undefined);
 });
+
+
+test('key edits reject values that project validation would reject', async () => {
+  const { extendProject } = await import('./extensions.js');
+  const { validateProject } = await import('./persistence.js');
+  const project = extendProject(createProject());
+  for (const [property, invalid] of [
+    ['hotbar.slot', -1], ['hotbar.slot', 2.5], ['hotbar.slot', 9],
+    ['variable.intensity', 2.1], ['equipment.mainHand', 'banana']
+  ]) {
+    const track = findTrack(project, 'den', property);
+    assert.throws(() => upsertKey(project, track.id, 0, invalid), /Invalid/);
+    assert.equal(track.keys.length, 0);
+  }
+  for (const [property, value] of [['hotbar.slot', 8], ['variable.intensity', 2], ['equipment.mainHand', 'sword']]) {
+    const track = findTrack(project, 'den', property);
+    assert.equal(validateProject(upsertKey(project, track.id, 0, value)).valid, true);
+  }
+});
+
+test('insertion after playback snaps tick and never reuses an earlier selected key', async () => {
+  const { keyInsertionAt } = await import('./core.js');
+  const project = createProject();
+  let track = findTrack(project, 'den', 'x');
+  const p1 = upsertKey(project, track.id, 0, -2, 'linear');
+  const p2 = upsertKey(p1, track.id, 40, 2, 'linear');
+  track = findTrack(p2, 'den', 'x');
+  assert.deepEqual(keyInsertionAt(track, 20.4, true, track.keys[0], null), { tick: 20, value: 0 });
+  assert.deepEqual(keyInsertionAt(track, 20.4, true, track.keys[0], {trackId:track.id,value:3}), { tick:20, value:3 });
+});

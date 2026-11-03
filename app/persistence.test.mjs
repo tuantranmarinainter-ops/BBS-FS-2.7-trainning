@@ -83,3 +83,19 @@ test('confirmed reset discards only the corrupt record actually observed', () =>
   assert.equal(storage.getItem('bbs-trainer-v1:bad'), null);
   assert.equal(p.save('bad', {fresh:true}).ok, true);
 });
+
+
+
+test('invalid edits cannot replace the last valid saved project', () => {
+  const storage = new Storage();
+  const store = createPersistence({storage, validate: value => validateProject(value?.project)});
+  const project = extendProject(createProject());
+  assert.equal(store.load('sandbox').ok, true);
+  assert.equal(store.save('sandbox', {project}).ok, true);
+  const invalid = structuredClone(project);
+  invalid.title = 'x'.repeat(4097);
+  const result = store.save('sandbox', {project: invalid});
+  assert.equal(result.ok, false);
+  assert.match(result.error, /invalid data/i);
+  assert.deepEqual(store.load('sandbox').value.project, project);
+});
