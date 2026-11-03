@@ -3,6 +3,9 @@ import {PROPERTY_GROUPS,getPropertyDefinition,extendProject,describeExtensions} 
 import {LESSONS,createLessonProject,createSolutionProject,gradeLesson} from './lessons.js';
 import {createPersistence,parseProjectJSON,serializeProject,validateProject} from './persistence.js';
 import {createScene} from './scene.js';
+import {initUiMode} from './ui-mode.js';
+let uiStorage; try { uiStorage=window.localStorage; } catch { uiStorage=undefined; }
+initUiMode(document,uiStorage);
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const baseGroups=[{id:'position',label:'Position · vị trí và góc',properties:['x','y','z','pitch','yaw','headYaw','bodyYaw'].map(id=>({id,label:id,type:'number',owner:'replay'}))},{id:'visible',label:'Visible · hiển thị',properties:[{id:'visible',label:'visible',type:'boolean',owner:'form'}]}];
 const groups=[...baseGroups,...PROPERTY_GROUPS];
