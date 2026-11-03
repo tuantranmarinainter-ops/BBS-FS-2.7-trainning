@@ -1,8 +1,8 @@
 # ĐẶC TẢ SẢN PHẨM — BBS FS 2.7 trainning
-Phiên bản tài liệu: 0.1 · Ngày: 03/11/2026
-Trạng thái: Bản đặc tả đề xuất để duyệt; không phải xác nhận ứng dụng đã hoàn thành.
+Phiên bản tài liệu: 0.2 · Ngày: 03/11/2026
+Trạng thái: Đã có mã trainer preview các đợt; chưa nghiệm thu đầy đủ hoặc kiểm thử trong game.
 Nguồn yêu cầu: README.md và trao đổi trực tiếp của chủ dự án.
-Giai đoạn được yêu cầu hiện tại: viết đặc tả. Chưa triển khai thêm code, chưa xuất bản.
+Yêu cầu mới nhất: huy động tiếp code toàn bộ các đợt. Chủ dự án đã cho phép triển khai; phạm vi thực tế và giới hạn trong docs/PHASES.md.
 
 ## 1. Mục tiêu và kết quả học
 Xây phòng tập trên trình duyệt với bố cục tương tự Film Editor trong hai ảnh tham chiếu.
@@ -59,7 +59,7 @@ Hiện chưa có kiểm thử runtime trong game. Changelog không đủ để k
 
 F02 không đồng nghĩa rig/pose từng xương. Body parts trong MVP là cây thành phần form mẫu; không tự coi là danh sách xương giải phẫu. Nhân vật có thể chỉ có root; fixture ghép có root và aura. Cách ánh xạ cần đối chiếu mã UI trước triển khai.
 
-### 3.2 Đợt sau
+### 3.2 Các đợt mở rộng
 - Đợt 2: States, Hotbar, Equipment, Variables; Pose, Transform, Anchor.
 - Đợt 3: Model, Texture, Actions, VFX; bài riêng theo loại morph.
 - Chưa thuộc MVP: IK, vật lý, model editor/UV, thu âm, xuất video, nhập BOBJ, xuất film BBS, dựng camera theo clip.
@@ -91,7 +91,7 @@ Không thêm nút trang trí có vẻ hoạt động nhưng không làm gì.
 - Cho orbit/pan/zoom góc xem bằng điều khiển có hướng dẫn; đây là camera quan sát trainer, không phải track camera BBS.
 - Nút đặt lại góc nhìn; chế độ nhìn trước/bên/trên giúp học trục.
 - Scrub đến cùng thời điểm luôn trả cùng kết quả.
-- Thiếu WebGL: báo rõ không thể chạy phần 3D; không âm thầm thay bằng hình tĩnh rồi báo đạt.
+- Theo yêu cầu dùng Three.js: ưu tiên WebGL2; thiếu GPU có thể dựng phần mềm từ cùng scene graph/camera, ghi rõ chế độ. Đây vẫn là phối cảnh 3D có tương tác, không thay bằng hình tĩnh. Nếu cả WebGL2/Canvas2D đều lỗi, báo không thể chạy 3D.
 
 Trục thế giới và hướng trái/phải trên màn hình phải được phân biệt. X tăng không luôn có nghĩa đi sang phải màn hình khi đổi camera.
 
@@ -275,12 +275,45 @@ Giải quyết bằng đọc mã đúng mốc và thử thao tác trong game khi
 | Giai đoạn | Đầu ra | Trạng thái |
 |---|---|---|
 | P1 | Repo và khảo sát ban đầu | Đã có; còn V01–V06 |
-| P2 | SPEC.md v0.1 | Bản này, chờ duyệt |
-| P3 | Mockup desktop và màn hình hẹp | Chưa thực hiện theo đặc tả |
-| P4 | Core, timeline, cảnh, lưu | Chưa thực hiện theo đặc tả |
-| P5 | 8 bài và bộ chấm | Chưa thực hiện theo đặc tả |
-| P6 | Báo cáo QA và đối chiếu game | Chưa thực hiện |
+| P2 | SPEC.md | Hợp đồng gốc v0.1 và bổ sung v0.2 |
+| P3 | Mockup desktop và màn hình hẹp | Có bản lịch sử; ứng dụng hiện tại index.html, xem docs/PHASES.md |
+| P4 | Core, timeline, cảnh, lưu | Đã có mã; 3D chưa được browser QA có WebGL |
+| P5 | Bài học và bộ chấm | Có L01–L08, L04 khóa; thêm bài đợt 2/3, xem docs/PHASES.md |
+| P6 | Báo cáo QA và đối chiếu game | Đã có REPORT.md; runtime game, visual WebGL và benchmark còn NOT_RUN |
 
 Bản HTML thử trước đây không phải nguồn chuẩn và chưa được nghiệm thu.
-Cổng triển khai: chủ dự án duyệt đặc tả, sau đó duyệt mockup trước khi hoàn thiện logic.
+Yêu cầu sau cùng ngày 03/11/2026 cho phép code toàn bộ các đợt, thay cổng chờ duyệt để viết code. Việc này không thay thế nghiệm thu, thử game hoặc cho phép tự merge.
 Thay đổi phạm vi phải ghi quyết định và cập nhật đặc tả; không tự coi đợt 2/3 thuộc MVP.
+
+## 14. Khảo sát ở bước P3 — lịch sử trước triển khai (03/11/2026)
+
+Mockup chỉ có điều hướng bố cục; cảnh SVG và timeline là minh họa. Chưa triển khai P4, chưa duyệt giao diện, chưa xác nhận hoàn thành MVP.
+
+Kết quả khảo sát mới được ghi riêng để không coi hợp đồng trainer v0.1 là hành vi đã thử trong game:
+
+- [V02 — Góc](docs/evidence/V02-angles.md): bốn kênh riêng, các đường render có điều kiện; vẫn cần fixture runtime trước khi mở L04.
+- [V03 — Body parts](docs/evidence/V03-body-parts.md): cây form gốc/form con; x/y/z và các góc thuộc Replay, còn visible thuộc form. Trước P4 cần sửa mô hình Track ở mục 8 để phân biệt chủ sở hữu Replay và form; không tạo bản sao kênh Position cho từng part. Chuỗi Replay → part → track là luồng chọn UI, không phải bằng chứng sở hữu dữ liệu.
+- [V04 — Nội suy](docs/evidence/V04-interpolation.md): đường channel khảo sát dùng nội suy của key đầu đoạn; nhãn nguồn là Sine In/out. Constant và Step khác nhau. Tương đương runtime, tick phân số và từng loại track còn cần kiểm tra.
+
+Các kết quả trên là bằng chứng source tại commit khảo sát, không đổi thành runtime; V01 và việc đối chiếu hai ảnh gốc vẫn chưa giải quyết.
+
+
+
+## 15. Triển khai v0.2 theo yêu cầu mới
+
+Chi tiết từng nhóm, phạm vi trainer và bài chuyên đề trong [docs/PHASES.md](docs/PHASES.md). Có mã 3 đợt, không coi nhóm mở rộng là bản sao toàn bộ mod. Mở bằng HTTP qua npm start; mockups/index.html giữ làm lịch sử P3.
+
+Schema Track tại mục 8 được bổ sung owner (replay hoặc form). Position/góc có partId=null, Visible/thuộc tính form có partId hợp lệ. replay-owned và form-owned không dùng chung slot. Phạm vi fixture/part/bounds/options khai báo tại app/extensions.js và được kiểm tra khi nhập.
+
+21 bài gồm 8 cơ bản, E02/E03 phối hợp và 11 chuyên đề. 20 bài mở được; L04 tiếp tục khóa. Đáp án hiện thành dữ liệu ở dialog riêng, chưa có cảnh mẫu 3D phát độc lập. Kết quả chấm là kiểm tra dữ liệu; thiếu WebGL được báo rõ. Thanh trượt có nhãn đổi tỷ lệ chiều cao thay thanh chia kéo trong đề xuất 4.1.
+
+Lưu progress theo khóa bài/giai đoạn/chế độ; passed, everPassed, attempts, lastCheckedAt, changed và ruleSetVersion. Reset xóa kết quả hiện tại, giữ lịch sử từng đạt. Hạn chế đa tab do localStorage không có giao dịch nguyên tử được ghi trong báo cáo.
+
+Bản triển khai chưa đáp ứng toàn bộ nghiệm thu runtime và visual: L04, đối chiếu hai ảnh, WebGL trên thiết bị có GPU, mobile/các kích thước chuẩn và hiệu năng còn cần thử. Không tuyên bố hoàn tất MVP chỉ từ test Node. Không tự mở phạm vi IK/vật lý/BOBJ/film/video.
+
+
+## 16. Three.js — yêu cầu bổ sung
+
+Thay renderer cũ bằng Three.js r186 vendored (module/core và MIT license), không CDN. Scene/Group/Mesh/PerspectiveCamera/Raycaster quản lý nhân vật, trục, mặt đất, preview và chọn đối tượng. Có chế độ WebGL2 và chế độ phần mềm chiếu chính scene Three.js lên Canvas2D khi không có GPU; nhãn trạng thái phân biệt rõ. Chế độ phần mềm không có texture/shadow đầy đủ và không được coi là kiểm chứng nhánh GPU.
+
+Đã browser QA cảnh phần mềm, orbit, chọn nhân vật, preview tọa độ và tua keyframe làm thay đổi vị trí. L04/runtime game và WebGL2 thật vẫn chưa nghiệm thu. Chi tiết docs/THREEJS.md và phần cập nhật trong REPORT.md.
