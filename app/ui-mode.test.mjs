@@ -16,7 +16,7 @@ test('switch persists and restores without touching project storage',()=>{
  const a=setup();a.data.set('project','keep');initUiMode(a.doc,a.storage);
  a.select.value='bbs';a.select.handler();assert.equal(a.doc.body.dataset.interface,'bbs');
  assert.equal(a.data.get(UI_MODE_KEY),'bbs');assert.equal(a.data.get('project'),'keep');
- const doc2={body:{dataset:{}},getElementById:()=>({value:''})};
+ const doc2={body:{dataset:{}},getElementById:()=>({value:'',addEventListener(){}})};
  initUiMode(doc2,a.storage);assert.equal(doc2.body.dataset.interface,'bbs');
  a.select.value='current';a.select.handler();assert.equal(a.doc.body.dataset.interface,'current');
 });
