@@ -1,3 +1,5 @@
+> Tài liệu lịch sử P3. Ứng dụng hiện tại ở index.html; chủ dự án đã yêu cầu code các đợt, xem docs/PHASES.md và REPORT.md.
+
 # Hướng dẫn xem và duyệt mockup P3
 
 ## Mở bản mẫu

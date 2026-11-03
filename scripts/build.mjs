@@ -1,0 +1,10 @@
+import {cp,mkdir,rm,readdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+const root=new URL('../',import.meta.url),out=new URL('../dist/',import.meta.url);
+await mkdir(out,{recursive:true});
+for (const entry of await readdir(out)) await rm(new URL(entry,out),{recursive:true,force:true});
+await cp(new URL('index.html',root),new URL('index.html',out));
+await cp(new URL('app/',root),new URL('app/',out),{recursive:true,filter:src=>!src.endsWith('.test.mjs')});
+await cp(new URL('docs/',root),new URL('docs/',out),{recursive:true});
+await cp(new URL('SPEC.md',root),new URL('SPEC.md',out));
+console.log('Built static trainer: '+fileURLToPath(out));

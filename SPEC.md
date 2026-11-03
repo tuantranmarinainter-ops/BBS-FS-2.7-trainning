@@ -1,8 +1,8 @@
 # ĐẶC TẢ SẢN PHẨM — BBS FS 2.7 trainning
-Phiên bản tài liệu: 0.1 · Ngày: 03/11/2026
-Trạng thái: Bản đặc tả đề xuất để duyệt; không phải xác nhận ứng dụng đã hoàn thành.
+Phiên bản tài liệu: 0.2 · Ngày: 03/11/2026
+Trạng thái: Đã có mã trainer preview các đợt; chưa nghiệm thu đầy đủ hoặc kiểm thử trong game.
 Nguồn yêu cầu: README.md và trao đổi trực tiếp của chủ dự án.
-Giai đoạn được yêu cầu hiện tại: viết đặc tả. Chưa triển khai thêm code, chưa xuất bản.
+Yêu cầu mới nhất: huy động tiếp code toàn bộ các đợt. Chủ dự án đã cho phép triển khai; phạm vi thực tế và giới hạn trong docs/PHASES.md.
 
 ## 1. Mục tiêu và kết quả học
 Xây phòng tập trên trình duyệt với bố cục tương tự Film Editor trong hai ảnh tham chiếu.
@@ -59,7 +59,7 @@ Hiện chưa có kiểm thử runtime trong game. Changelog không đủ để k
 
 F02 không đồng nghĩa rig/pose từng xương. Body parts trong MVP là cây thành phần form mẫu; không tự coi là danh sách xương giải phẫu. Nhân vật có thể chỉ có root; fixture ghép có root và aura. Cách ánh xạ cần đối chiếu mã UI trước triển khai.
 
-### 3.2 Đợt sau
+### 3.2 Các đợt mở rộng
 - Đợt 2: States, Hotbar, Equipment, Variables; Pose, Transform, Anchor.
 - Đợt 3: Model, Texture, Actions, VFX; bài riêng theo loại morph.
 - Chưa thuộc MVP: IK, vật lý, model editor/UV, thu âm, xuất video, nhập BOBJ, xuất film BBS, dựng camera theo clip.
@@ -275,17 +275,17 @@ Giải quyết bằng đọc mã đúng mốc và thử thao tác trong game khi
 | Giai đoạn | Đầu ra | Trạng thái |
 |---|---|---|
 | P1 | Repo và khảo sát ban đầu | Đã có; còn V01–V06 |
-| P2 | SPEC.md v0.1 | Bản này, chờ duyệt |
-| P3 | Mockup desktop và màn hình hẹp | Đã có đề xuất trong mockups/index.html; chờ duyệt, xem docs/MOCKUP-REVIEW.md |
-| P4 | Core, timeline, cảnh, lưu | Chưa thực hiện theo đặc tả |
-| P5 | 8 bài và bộ chấm | Chưa thực hiện theo đặc tả |
-| P6 | Báo cáo QA và đối chiếu game | Chưa thực hiện |
+| P2 | SPEC.md | Hợp đồng gốc v0.1 và bổ sung v0.2 |
+| P3 | Mockup desktop và màn hình hẹp | Có bản lịch sử; ứng dụng hiện tại index.html, xem docs/PHASES.md |
+| P4 | Core, timeline, cảnh, lưu | Đã có mã; 3D chưa được browser QA có WebGL |
+| P5 | Bài học và bộ chấm | Có L01–L08, L04 khóa; thêm bài đợt 2/3, xem docs/PHASES.md |
+| P6 | Báo cáo QA và đối chiếu game | Đã có REPORT.md; runtime game, visual WebGL và benchmark còn NOT_RUN |
 
 Bản HTML thử trước đây không phải nguồn chuẩn và chưa được nghiệm thu.
-Cổng triển khai: chủ dự án duyệt đặc tả, sau đó duyệt mockup trước khi hoàn thiện logic.
+Yêu cầu sau cùng ngày 03/11/2026 cho phép code toàn bộ các đợt, thay cổng chờ duyệt để viết code. Việc này không thay thế nghiệm thu, thử game hoặc cho phép tự merge.
 Thay đổi phạm vi phải ghi quyết định và cập nhật đặc tả; không tự coi đợt 2/3 thuộc MVP.
 
-## 14. Bổ sung khảo sát cho bước P3 (03/11/2026)
+## 14. Khảo sát ở bước P3 — lịch sử trước triển khai (03/11/2026)
 
 Mockup chỉ có điều hướng bố cục; cảnh SVG và timeline là minh họa. Chưa triển khai P4, chưa duyệt giao diện, chưa xác nhận hoàn thành MVP.
 
@@ -297,3 +297,16 @@ Kết quả khảo sát mới được ghi riêng để không coi hợp đồng
 
 Các kết quả trên là bằng chứng source tại commit khảo sát, không đổi thành runtime; V01 và việc đối chiếu hai ảnh gốc vẫn chưa giải quyết.
 
+
+
+## 15. Triển khai v0.2 theo yêu cầu mới
+
+Chi tiết từng nhóm, phạm vi trainer và bài chuyên đề trong [docs/PHASES.md](docs/PHASES.md). Có mã 3 đợt, không coi nhóm mở rộng là bản sao toàn bộ mod. Mở bằng HTTP qua npm start; mockups/index.html giữ làm lịch sử P3.
+
+Schema Track tại mục 8 được bổ sung owner (replay hoặc form). Position/góc có partId=null, Visible/thuộc tính form có partId hợp lệ. replay-owned và form-owned không dùng chung slot. Phạm vi fixture/part/bounds/options khai báo tại app/extensions.js và được kiểm tra khi nhập.
+
+21 bài gồm 8 cơ bản, E02/E03 phối hợp và 11 chuyên đề. 20 bài mở được; L04 tiếp tục khóa. Đáp án hiện thành dữ liệu ở dialog riêng, chưa có cảnh mẫu 3D phát độc lập. Kết quả chấm là kiểm tra dữ liệu; thiếu WebGL được báo rõ. Thanh trượt có nhãn đổi tỷ lệ chiều cao thay thanh chia kéo trong đề xuất 4.1.
+
+Lưu progress theo khóa bài/giai đoạn/chế độ; passed, everPassed, attempts, lastCheckedAt, changed và ruleSetVersion. Reset xóa kết quả hiện tại, giữ lịch sử từng đạt. Hạn chế đa tab do localStorage không có giao dịch nguyên tử được ghi trong báo cáo.
+
+Bản triển khai chưa đáp ứng toàn bộ nghiệm thu runtime và visual: L04, đối chiếu hai ảnh, WebGL trên thiết bị có GPU, mobile/các kích thước chuẩn và hiệu năng còn cần thử. Không tuyên bố hoàn tất MVP chỉ từ test Node. Không tự mở phạm vi IK/vật lý/BOBJ/film/video.
