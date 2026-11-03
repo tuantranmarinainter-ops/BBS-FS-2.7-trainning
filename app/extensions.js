@@ -1,5 +1,4 @@
 /* Trainer-only extensions. These values are a teaching fixture, not BBS film data. */
-import { clone } from './core.js';
 
 const options = (...values) => values.map(([value, label]) => ({ value, label }));
 const property = (id, label, type, owner, defaultValue, description, extra = {}) =>
@@ -68,13 +67,24 @@ export function getPropertyDefinition(propertyId) {
   return definitions.get(propertyId);
 }
 
+/** Keep editing and import validation in agreement on property values. */
+export function isValidTrackValue(track, value) {
+  if (!['number', 'boolean', 'string'].includes(track.valueType) || typeof value !== track.valueType) return false;
+  const definition = getPropertyDefinition(track.propertyId);
+  if (typeof value === 'number' && (!Number.isFinite(value) || (definition?.min !== undefined && value < definition.min) || (definition?.max !== undefined && value > definition.max))) return false;
+  if (track.propertyId === 'hotbar.slot' && !Number.isInteger(value)) return false;
+  if (typeof value === 'string' && value.length > 4096) return false;
+  if (definition?.options && !definition.options.some(option => option.value === value)) return false;
+  return true;
+}
+
 export function describeExtensions() {
   return PROPERTY_GROUPS.map(({ label, phase, description }) => `Đợt ${phase} · ${label}: ${description} (simulator)`);
 }
 
 /** Add missing tracks without overwriting existing data; safe to apply repeatedly. */
 export function extendProject(project) {
-  const result = clone(project);
+  const result = structuredClone(project);
   const usedIds = new Set(result.replays.flatMap(replay => replay.tracks.map(track => track.id)));
   for (const replay of result.replays) {
     const addTrack = (definition, partId) => {
@@ -101,3 +111,4 @@ export function extendProject(project) {
   }
   return result;
 }
+
