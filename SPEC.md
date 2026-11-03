@@ -276,7 +276,7 @@ Giải quyết bằng đọc mã đúng mốc và thử thao tác trong game khi
 |---|---|---|
 | P1 | Repo và khảo sát ban đầu | Đã có; còn V01–V06 |
 | P2 | SPEC.md v0.1 | Bản này, chờ duyệt |
-| P3 | Mockup desktop và màn hình hẹp | Chưa thực hiện theo đặc tả |
+| P3 | Mockup desktop và màn hình hẹp | Đã có đề xuất trong mockups/index.html; chờ duyệt, xem docs/MOCKUP-REVIEW.md |
 | P4 | Core, timeline, cảnh, lưu | Chưa thực hiện theo đặc tả |
 | P5 | 8 bài và bộ chấm | Chưa thực hiện theo đặc tả |
 | P6 | Báo cáo QA và đối chiếu game | Chưa thực hiện |
@@ -284,3 +284,16 @@ Giải quyết bằng đọc mã đúng mốc và thử thao tác trong game khi
 Bản HTML thử trước đây không phải nguồn chuẩn và chưa được nghiệm thu.
 Cổng triển khai: chủ dự án duyệt đặc tả, sau đó duyệt mockup trước khi hoàn thiện logic.
 Thay đổi phạm vi phải ghi quyết định và cập nhật đặc tả; không tự coi đợt 2/3 thuộc MVP.
+
+## 14. Bổ sung khảo sát cho bước P3 (03/11/2026)
+
+Mockup chỉ có điều hướng bố cục; cảnh SVG và timeline là minh họa. Chưa triển khai P4, chưa duyệt giao diện, chưa xác nhận hoàn thành MVP.
+
+Kết quả khảo sát mới được ghi riêng để không coi hợp đồng trainer v0.1 là hành vi đã thử trong game:
+
+- [V02 — Góc](docs/evidence/V02-angles.md): bốn kênh riêng, các đường render có điều kiện; vẫn cần fixture runtime trước khi mở L04.
+- [V03 — Body parts](docs/evidence/V03-body-parts.md): cây form gốc/form con; x/y/z và các góc thuộc Replay, còn visible thuộc form. Trước P4 cần sửa mô hình Track ở mục 8 để phân biệt chủ sở hữu Replay và form; không tạo bản sao kênh Position cho từng part. Chuỗi Replay → part → track là luồng chọn UI, không phải bằng chứng sở hữu dữ liệu.
+- [V04 — Nội suy](docs/evidence/V04-interpolation.md): đường channel khảo sát dùng nội suy của key đầu đoạn; nhãn nguồn là Sine In/out. Constant và Step khác nhau. Tương đương runtime, tick phân số và từng loại track còn cần kiểm tra.
+
+Các kết quả trên là bằng chứng source tại commit khảo sát, không đổi thành runtime; V01 và việc đối chiếu hai ảnh gốc vẫn chưa giải quyết.
+

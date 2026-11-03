@@ -3,13 +3,16 @@
 Phòng tập HTML học BBS FS 2.7 bằng tiếng Việt: mô phỏng Film Editor, hướng dẫn từng bước và bài tập có kiểm tra.
 
 ## Trạng thái
-Đang khảo sát và đặc tả. Chưa có ứng dụng hoàn thiện trong repo.
-Đã có bản thử sơ bộ ngoài repo, chưa được duyệt hoặc đối chiếu đầy đủ; không coi là bản chuẩn.
-Theo yêu cầu chủ dự án: lập kế hoạch trước, duyệt giao diện trước khi triển khai tiếp.
+SPEC v0.1 là đề xuất đang chờ duyệt. P3 là mockup giao diện để xem và góp ý, chưa phải ứng dụng hoàn thiện; chưa có xác nhận duyệt đặc tả hoặc giao diện. Cần duyệt giao diện trước khi chuyển sang P4 và triển khai logic mô phỏng.
+
+## Chạy mockup P3
+Mở trực tiếp `mockups/index.html` bằng trình duyệt hiện đại; không cần máy chủ hay kết nối mạng. Xem [hướng dẫn và nội dung cần duyệt](docs/MOCKUP-REVIEW.md).
+
+Mockup cho phép chọn Replay, Body part, track và điều hướng các panel để xem bố cục. Cảnh là hình SVG 2D minh họa, không phải WebGL hay animation; các thao tác keyframe, playback, chấm bài và lưu chưa được triển khai.
 
 ## Mục tiêu
 Hiểu chức năng → xem mẫu → làm theo → tự thực hành → áp dụng trong Minecraft.
-Giao diện tham chiếu hai ảnh người dùng cung cấp: Replay bên trái, viewport phía trên, timeline phía dưới và inspector bên phải.
+Bố cục đề xuất theo mô tả tham chiếu: Replay bên trái, viewport phía trên, timeline phía dưới và inspector bên phải. Hai ảnh tham chiếu gốc chưa có trong repo nên chưa thể đối chiếu trực tiếp.
 
 ## Phạm vi MVP
 - Chọn Replay: Đen, Gỗ Xưa và hiệu ứng minh họa.
@@ -61,3 +64,4 @@ Giao diện tham chiếu hai ảnh người dùng cung cấp: Replay bên trái,
   Chưa xác minh mốc này trùng hoàn toàn với JAR phát hành.
 
 Dự án học tập độc lập, không phải sản phẩm chính thức của Mojang hoặc nhóm BBS FS.
+
