@@ -1,63 +1,38 @@
-# BBS FS 2.7 trainning
+# BBS FS 2.7 Training
 
-Phòng tập HTML học BBS FS 2.7 bằng tiếng Việt: mô phỏng Film Editor, hướng dẫn từng bước và bài tập có kiểm tra.
+Phòng tập học BBS FS 2.7 bằng tiếng Việt, bám giao diện và chức năng mã nguồn gốc.
+
+## Ưu tiên hiện tại
+**Giúp người dùng hiểu các phần trong ảnh đã chụp trước, rồi mới làm tiếp phần mở rộng.**
+Mỗi phần: tên và công dụng → thao tác → ví dụ ngắn → tự thực hành → xác nhận đã hiểu. Giữ tên English kèm giải thích Việt và đúng vị trí giao diện.
+Hai ảnh tham chiếu được ghi tên trong SPEC nhưng chưa có file trong repo; phải đọc đúng ảnh trước khi đánh số vùng/nút. Chưa coi người học đã hiểu chỉ vì đã mở bài.
+
+## Tài liệu
+- [SPEC v0.3 — ưu tiên học từ ảnh và đặc tả toàn bộ](SPEC.md)
+- [Bảng đối chiếu mã nguồn BBS FS 2.7](docs/BBS27-SOURCE-MAP.md)
+- [Fixture và điều kiện đạt cho bài L23–L60](docs/LESSON-FIXTURES-v0.3.md)
+- [Đặc tả v0.2 lưu lịch sử, gồm fixture L01–L22](docs/history/SPEC-v0.2.md)
 
 ## Trạng thái
-Đang khảo sát và đặc tả. Chưa có ứng dụng hoàn thiện trong repo.
-Đã có bản thử sơ bộ ngoài repo, chưa được duyệt hoặc đối chiếu đầy đủ; không coi là bản chuẩn.
-Theo yêu cầu chủ dự án: lập kế hoạch trước, duyệt giao diện trước khi triển khai tiếp.
+Đang đặc tả; chưa có ứng dụng hoàn thiện trong repo. Tài liệu chưa phải kết quả triển khai hoặc nghiệm thu.
+Đặc tả tổng thể mở rộng thành 8 đợt, 60 bài; người học bắt đầu bằng các phần trong ảnh, không học toàn bộ cùng lúc.
+Mockup và logic cần đi theo nguồn đã đối chiếu. Tác vụ Minecraft/native không được báo đã chạy chỉ bằng mô phỏng web.
 
-## Mục tiêu
-Hiểu chức năng → xem mẫu → làm theo → tự thực hành → áp dụng trong Minecraft.
-Giao diện tham chiếu hai ảnh người dùng cung cấp: Replay bên trái, viewport phía trên, timeline phía dưới và inspector bên phải.
+| Đợt | Phạm vi |
+|---|---|
+| D1 | Giao diện nền, Replay, keyframe, timeline, lưu và bài cơ bản |
+| D2 | States, Hotbar, Equipment, Variables, Pose, Transform, Anchor |
+| D3 | Forms/materials/model animation, multi-key, graph, loop, motion shift, quản lý Film/layout |
+| D4 | Camera Editor, camera clips, âm thanh/ảnh/video/phụ đề |
+| D5 | Film Actions, recording, IK, constraints, physics, bake |
+| D6 | Morphing, Model blocks, Particles, Model editor, Textures, Audio, Settings |
+| D7 | Trainer JSON, native Film, BOBJ, Blender/FBX và round-trip |
+| D8 | Quality, offline/backup, export queue, bài cuối và QA toàn bộ |
 
-## Phạm vi MVP
-- Chọn Replay: Đen, Gỗ Xưa và hiệu ứng minh họa.
-- Chọn Body parts và hiển thị các track tương ứng.
-- Position: x, y, z, pitch, yaw, headYaw, bodyYaw.
-- Tạo, chọn, sửa, xóa, kéo keyframe; tua timeline; phát/dừng.
-- Nội suy: Linear, Constant và một kiểu Ease In/Out đã đối chiếu.
-- Visible: bật/tắt hiển thị.
-- Học có hướng dẫn, tập tự do, kiểm tra dữ liệu bài làm, lưu tiến độ.
+## Nguồn chuẩn
+[Wemppy4/bbs-fs](https://github.com/Wemppy4/bbs-fs), commit f48c4fe341df4531f78428ed22bba93d5e6073df: gradle.properties ghi mod 2.7 / Minecraft 1.20.1.
+Đã lập danh mục 14 forms, 19 camera/media clips và 12 action clips tích hợp từ registry nguồn. Chưa xác minh JAR phát hành trùng commit, chưa chạy kiểm thử Minecraft.
+Java/Fabric UI cần port/adapters để chạy web; ưu tiên tận dụng bố cục, label, cấu trúc dữ liệu và thuật toán có test. Giữ license/attribution khi tái sử dụng nguồn.
 
-## Kế hoạch
-1. Khảo sát nguồn: xác minh phiên bản, lập bảng chức năng và trạng thái bằng chứng.
-2. Đặc tả: luồng thao tác, mô hình dữ liệu, bài tập và tiêu chí nghiệm thu.
-3. Mockup: duyệt bố cục giống Film Editor trước khi hoàn thiện logic.
-4. Mô phỏng: triển khai cảnh, timeline, inspector và tương tác.
-5. Bài tập: mục tiêu, làm mẫu, làm theo, tự làm, chấm bài, hướng dẫn chuyển sang game.
-6. QA: đối chiếu BBS FS 2.7; ghi rõ phần đơn giản hóa hoặc chưa xác minh.
-
-## Bài học dự kiến
-1. Nhận biết giao diện, Replay và track.
-2. Hai keyframe tạo chuyển động.
-3. Phân biệt X/Y/Z.
-4. Phân biệt góc thân, đầu và cúi/ngẩng.
-5. So sánh nội suy.
-6. Ẩn/hiện đúng thời điểm.
-7. Phối hợp hai nhân vật.
-8. Tự dựng một shot ngắn.
-
-## Phần mở rộng
-- Đợt 2: States, Hotbar, Equipment, Variables; Pose, Transform, Anchor.
-- Đợt 3: Model, Texture, Actions, VFX và bài học theo loại morph.
-- Camera, IK, vật lý, nhập BOBJ và xuất film cần khảo sát riêng; chưa cam kết trong MVP.
-
-## Tiêu chí nghiệm thu
-- Bố cục bám ảnh tham chiếu, tên chức năng giữ nguyên kèm giải thích tiếng Việt.
-- Thao tác thực sự làm thay đổi cảnh và dữ liệu.
-- Chấm bài theo đúng Replay, track, thời điểm và giá trị; giải thích lỗi cụ thể.
-- Không đồng nhất Step với Constant; không dùng tên Smooth chung thay cho tên nội suy của mod.
-- Không trình bày phím tắt tự đặt như phím tắt chính thức.
-- Phân biệt rõ điều đã xác minh bằng mã nguồn, bằng tài liệu và điều chưa thử trong game.
-- Không coi bản HTML là Minecraft hoặc bản sao đầy đủ của mod.
-
-## Nguồn tham chiếu
-- Repo: https://github.com/Wemppy4/bbs-fs
-- Wiki 2.7: https://github.com/Wemppy4/bbs-fs/wiki/2.7.0
-- Bản phát hành 1.20.1: https://www.curseforge.com/minecraft/mc-mods/bbs-fs/files/8934314
-- Mốc mã nguồn khảo sát: f48c4fe341df4531f78428ed22bba93d5e6073df.
-  gradle.properties ghi minecraft_version=1.20.1 và mod_version=2.7.
-  Chưa xác minh mốc này trùng hoàn toàn với JAR phát hành.
-
+Mỗi gói triển khai có PR và báo cáo PASS/FAIL/NOT_RUN/BLOCKED; không tự merge hoặc xuất bản.
 Dự án học tập độc lập, không phải sản phẩm chính thức của Mojang hoặc nhóm BBS FS.
