@@ -1,4 +1,4 @@
-import { getPropertyDefinition, isPropertyApplicable } from './extensions.js';
+import { getPropertyDefinition, isPropertyApplicable, isValidTrackValue } from './extensions.js';
 
 const MAX_BYTES = 2 * 1024 * 1024;
 const numeric = new Set(['x', 'y', 'z', 'pitch', 'yaw', 'headYaw', 'bodyYaw']);
@@ -59,15 +59,7 @@ export function validateProject(input) {
       const slot = [track.owner, track.partId, track.propertyId].map(value => typeof value === 'string' ? value : '').join('\u0000');
       if (propertySlots.has(slot)) fail('Duplicate property track');
       propertySlots.add(slot);
-      const validValue = value => {
-        if (typeof value !== track.valueType) return false;
-        if (typeof value === 'number' && (!finite(value) || (definition?.min !== undefined && value < definition.min) || (definition?.max !== undefined && value > definition.max))) return false;
-        if (track.propertyId === 'hotbar.slot' && !Number.isInteger(value)) return false;
-        if (typeof value === 'string' && !shortText(value)) return false;
-        if (definition?.options && !definition.options.some(option => option.value === value)) return false;
-        return ['number', 'boolean', 'string'].includes(track.valueType);
-      };
-      if (!validValue(track.baseValue)) fail('Invalid track base value');
+      if (!isValidTrackValue(track, track.baseValue)) fail('Invalid track base value');
       if (!Array.isArray(track.keys)) { fail('Invalid key list'); continue; }
       keyCount += track.keys.length;
       let previous = -Infinity;
@@ -77,7 +69,7 @@ export function validateProject(input) {
         keyIds.add(key.id);
         if (!finite(key.tick) || key.tick < 0 || key.tick > input.durationTicks || key.tick <= previous) fail('Keys must have unique sorted ticks within duration');
         previous = key.tick;
-        if (!validValue(key.value) || !interpolation.has(key.interpolationToNext)) fail('Invalid key value or interpolation');
+        if (!isValidTrackValue(track, key.value) || !interpolation.has(key.interpolationToNext)) fail('Invalid key value or interpolation');
       }
     }
   }
@@ -175,3 +167,4 @@ export function createPersistence(options = {}) {
   }
   return { load, save: (key, value) => write(key, value, false), remove: (key, options = {}) => write(key, null, true, options.discardCorrupt === true), destroy: () => eventTarget?.removeEventListener?.('storage', listener) };
 }
+
