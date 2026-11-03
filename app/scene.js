@@ -1,82 +1,83 @@
+import * as THREE from './vendor/three.module.js';
 import { evaluateProject } from './core.js';
+import { createSoftwareRenderer } from './software-renderer.js';
 
-// Scene values and joint rotations are trainer conventions, pending BBS runtime verification.
-const I=()=>new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
-function mul(a,b){const r=new Float32Array(16);for(let c=0;c<4;c++)for(let row=0;row<4;row++)for(let k=0;k<4;k++)r[c*4+row]+=a[k*4+row]*b[c*4+k];return r}
-function translate(x,y,z){const m=I();m[12]=x;m[13]=y;m[14]=z;return m}
-function scale(x,y,z){const m=I();m[0]=x;m[5]=y;m[10]=z;return m}
-function rotateX(a){const m=I(),c=Math.cos(a),s=Math.sin(a);m[5]=c;m[6]=s;m[9]=-s;m[10]=c;return m}
-function rotateY(a){const m=I(),c=Math.cos(a),s=Math.sin(a);m[0]=c;m[2]=-s;m[8]=s;m[10]=c;return m}
-const rad=n=>(Number(n)||0)*Math.PI/180;
-function perspective(fov,aspect,near,far){const f=1/Math.tan(fov/2),m=new Float32Array(16);m[0]=f/aspect;m[5]=f;m[10]=(far+near)/(near-far);m[11]=-1;m[14]=2*far*near/(near-far);return m}
-function lookAt(e,t){let z=norm([e[0]-t[0],e[1]-t[1],e[2]-t[2]]),x=norm([z[2],0,-z[0]]);if(Math.hypot(...x)<.01)x=[1,0,0];const y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,e),-dot(y,e),-dot(z,e),1])}
-function norm(v){const n=Math.hypot(...v)||1;return v.map(x=>x/n)}
-function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}
-function transform(m,p){return [0,1,2,3].map(row=>m[row]*p[0]+m[4+row]*p[1]+m[8+row]*p[2]+m[12+row])}
-function color(value,fallback){if(typeof value!=='string')return fallback;const named={red:'#c45151',blue:'#528bd1',green:'#69a65f',purple:'#9b70cb',gold:'#e6b45a',white:'#eeeeee',black:'#303540',wood:'#ad8054',default:''};let s=named[value.toLowerCase()]??value;if(/^#[0-9a-f]{3}$/i.test(s))s='#'+[...s.slice(1)].map(x=>x+x).join('');if(!/^#[0-9a-f]{6}$/i.test(s))return fallback;return [1,3,5].map(i=>parseInt(s.slice(i,i+2),16)/255)}
-const numeric=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
-const enabled=v=>v===true || (typeof v==='string'&&!['','none','off','false','0'].includes(v.toLowerCase()));
+// These transforms and joint cues are trainer conventions, not verified BBS runtime behavior.
+const num=(v,f=0)=>Number.isFinite(Number(v))?Number(v):f;
+const rad=v=>THREE.MathUtils.degToRad(num(v));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const tintColors={white:0xffffff,red:0xff7777,blue:0x77a9ff,green:0x86dc81};
+function disposeTree(root){root.traverse(o=>{o.geometry?.dispose();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material?.dispose()})}
+function group(parent,name){const g=new THREE.Group();g.name=name;parent.add(g);return g}
+function box(parent,name,position,dimensions,color){const mesh=new THREE.Mesh(new THREE.BoxGeometry(...dimensions),new THREE.MeshLambertMaterial({color}));mesh.name=name;mesh.position.set(...position);parent.add(mesh);return mesh}
+function line(parent,name,points,color){const geometry=new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(...p)));const object=new THREE.Line(geometry,new THREE.LineBasicMaterial({color}));object.name=name;parent.add(object);return object}
+function circle(parent,name,radius,color){const pts=[];for(let i=0;i<=48;i++){const a=i*Math.PI/24;pts.push([Math.cos(a)*radius,.025,Math.sin(a)*radius])}return line(parent,name,pts,color)}
+function addFigure(parent,replay,s,root){
+ const base=new THREE.Color(replay.fixtureId==='wood'?0x986940:0x557ca8).multiply(new THREE.Color(tintColors[root['texture.color']]??0xffffff));
+ const dark=base.clone().multiplyScalar(.55),skin=new THREE.Color(replay.fixtureId==='wood'?0xd4a879:0xd5b498);
+ if(root['model.kind']==='block'){box(parent,'model:block',[0,.85,0],[1,1.7,.7],base);box(parent,'block:face',[0,1.32,.355],[.5,.28,.025],skin);return}
+ const torso=group(parent,'torso');torso.position.y=s['states.sneaking']?1.03:1.15;torso.rotation.x=rad(s['states.sneaking']?18:0);
+ box(torso,'body',[0,0,0],[.75,.85,.4],base);
+ box(parent,'left-leg',[-.2,.35,0],[.3,.7,.34],dark);box(parent,'right-leg',[.2,.35,0],[.3,.7,.34],dark);
+ const head=group(torso,'head');head.position.y=.69;head.rotation.x=rad(s.pitch)+rad(root['pose.headX']);
+ box(head,'head:skin',[0,0,0],[.56,.55,.5],skin);box(head,'head:hair',[0,.2,0],[.57,.15,.51],dark);
+ box(head,'eye:left',[-.13,.02,.255],[.055,.065,.022],0x202b36);box(head,'eye:right',[.13,.02,.255],[.055,.065,.022],0x202b36);
+ const arm=group(torso,'arm:left');arm.position.set(-.52,.3,0);arm.rotation.x=rad(root['pose.armX'])+(s['states.sprinting']?-.5:0)+(root.action==='wave'?-.9:0);
+ box(arm,'arm:left:mesh',[0,-.32,0],[.28,.68,.32],base);box(torso,'arm:right',[.52,-.02,0],[.28,.68,.32],base);
+ if(s['equipment.head']==='helmet')box(head,'equipment:helmet',[0,.32,0],[.65,.17,.58],0xd9af51);
+ if(s['equipment.mainHand']==='sword'){box(arm,'equipment:sword',[0,-.77,.12],[.12,.55,.12],0xc4c9bf);box(arm,'equipment:sword:guard',[0,-.53,.12],[.32,.07,.12],0x907044)}
+ if(s['equipment.mainHand']==='pickaxe'){box(arm,'equipment:pickaxe',[0,-.77,.12],[.09,.65,.09],0x91663b);box(arm,'equipment:pickaxe:head',[0,-1.05,.12],[.42,.1,.14],0xb6c2c5)}
+}
+function addEffects(parent,part,state){const effect=part['vfx.kind']||'none';if(effect==='none')return;const size=clamp(num(part['vfx.size'],1),.1,4),intensity=clamp(num(state['variable.intensity'],1),0,2)/2,color=new THREE.Color(0xb28fff).multiplyScalar(intensity);circle(parent,'vfx:'+effect,size,color);if(effect==='sparks')for(let i=0;i<6;i++){const a=i*Math.PI/3;box(parent,'spark:'+i,[Math.cos(a)*size,.25+i*.13,Math.sin(a)*size],[.1,.1,.1],color)}}
+function applyPreview(project,state,preview){if(!preview)return;for(const replay of project.replays){const track=replay.tracks.find(t=>t.id===preview.trackId);if(!track)continue;const target=track.owner==='form'?state[replay.id]?.parts?.[track.partId]:state[replay.id];if(target)target[track.propertyId]=preview.value;return}}
 
-export function createScene(canvas,{onSelect=()=>{},onError=()=>{}}={}){
- let gl;try{gl=canvas.getContext('webgl',{antialias:true,alpha:false});}catch{};
- if(!gl){onError('Không thể chạy cảnh 3D: trình duyệt không hỗ trợ WebGL.');return {render(){},setView(){},resetView(){},dispose(){}}}
- function shader(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s}
- let program;
- try{program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,'attribute vec3 p; uniform mat4 m; void main(){gl_Position=m*vec4(p,1.0);}'));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,'precision mediump float; uniform vec3 c; void main(){gl_FragColor=vec4(c,1.0);}'));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));}catch(e){onError('Không thể khởi tạo WebGL: '+e.message);return {render(){},setView(){},resetView(){},dispose(){}}}
- const pos=gl.getAttribLocation(program,'p'),matrix=gl.getUniformLocation(program,'m'),colour=gl.getUniformLocation(program,'c');
- const cube=new Float32Array([ // triangles, centered unit cube
- -.5,-.5,.5,.5,-.5,.5,.5,.5,.5, -.5,-.5,.5,.5,.5,.5,-.5,.5,.5,
- .5,-.5,-.5,-.5,-.5,-.5,-.5,.5,-.5, .5,-.5,-.5,-.5,.5,-.5,.5,.5,-.5,
- -.5,-.5,-.5,-.5,-.5,.5,-.5,.5,.5, -.5,-.5,-.5,-.5,.5,.5,-.5,.5,-.5,
- .5,-.5,.5,.5,-.5,-.5,.5,.5,-.5, .5,-.5,.5,.5,.5,-.5,.5,.5,.5,
- -.5,.5,.5,.5,.5,.5,.5,.5,-.5, -.5,.5,.5,.5,.5,-.5,-.5,.5,-.5,
- -.5,-.5,-.5,.5,-.5,-.5,.5,-.5,.5, -.5,-.5,-.5,.5,-.5,.5,-.5,-.5,.5]);
- const cubeBuffer=gl.createBuffer(),lineBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,cubeBuffer);gl.bufferData(gl.ARRAY_BUFFER,cube,gl.STATIC_DRAW);
- // Labels live over the canvas so they remain legible at any scale and never intercept input.
- const parent=canvas.parentElement,doc=canvas.ownerDocument,labelLayer=parent&&doc?.createElement?doc.createElement('div'):null;
- if(labelLayer){Object.assign(labelLayer.style,{position:'absolute',inset:'0',overflow:'hidden',pointerEvents:'none'});labelLayer.setAttribute('aria-hidden','true');parent.appendChild(labelLayer)}
- const initial={azimuth:.75,elevation:.48,distance:17,target:[.8,1,1]};let camera={...initial,target:[...initial.target]},last=null,drag=null,picks=[];
- function draw(buffer,vertices,mode,model,c){gl.bindBuffer(gl.ARRAY_BUFFER,buffer);if(vertices)gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.DYNAMIC_DRAW);gl.vertexAttribPointer(pos,3,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(pos);gl.uniformMatrix4fv(matrix,false,mul(vp,model));gl.uniform3fv(colour,c);gl.drawArrays(mode,0,vertices?vertices.length/3:36)}
- let vp=I();function box(parent,x,y,z,w,h,d,c){draw(cubeBuffer,null,gl.TRIANGLES,mul(mul(parent,translate(x,y,z)),scale(w,h,d)),c)}
- function lines(vertices,c){draw(lineBuffer,vertices,gl.LINES,I(),c)}
- function resize(){const rect=canvas.getBoundingClientRect(),ratio=Math.min(globalThis.devicePixelRatio||1,2),w=Math.max(1,Math.round(rect.width*ratio)),h=Math.max(1,Math.round(rect.height*ratio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}gl.viewport(0,0,w,h)}
- function drawFrame(){if(!last)return;resize();gl.enable(gl.DEPTH_TEST);gl.clearColor(.065,.11,.15,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(program);
- const {azimuth:a,elevation:e,distance:d,target:t}=camera,eye=[t[0]+d*Math.cos(e)*Math.sin(a),t[1]+d*Math.sin(e),t[2]+d*Math.cos(e)*Math.cos(a)];vp=mul(perspective(Math.PI/4,canvas.width/canvas.height,.1,150),lookAt(eye,t));
- const grid=[];for(let i=-10;i<=10;i++)grid.push(i,0,-10,i,0,10,-10,0,i,10,0,i);lines(grid,[.20,.29,.35]);lines([0,.01,0,4,.01,0],[.8,.34,.35]);lines([0,.01,0,0,3,0],[.36,.74,.43]);lines([0,.01,0,0,.01,4],[.34,.55,.87]);
- const state=evaluateProject(last.project,last.tick);if(last.options.preview){const {trackId,value}=last.options.preview;for(const replay of last.project.replays){const track=replay.tracks.find(x=>x.id===trackId);if(track&&state[replay.id]){if(track.owner==='form'){state[replay.id].parts??={};state[replay.id].parts[track.partId]??={};state[replay.id].parts[track.partId][track.propertyId]=value}else state[replay.id][track.propertyId]=value;break}}}
- if(labelLayer)labelLayer.replaceChildren();
- picks=[];for(const replay of last.project.replays){const s=state[replay.id];if(!s)continue;const root=s.parts?.root||{},isVfx=replay.fixtureId==='vfx';const size=Math.max(.1,Math.min(4,numeric(root['transform.scale'],1))),anchor=[numeric(root['anchor.x']),numeric(root['anchor.y']),numeric(root['anchor.z'])];
- // Local form translation is rotated with the Replay. Anchor is a scale pivot, not another position offset.
- let base=mul(mul(translate(numeric(s.x),numeric(s.y)+(root.action==='jump'?Math.abs(Math.sin(last.tick*Math.PI/20))*.7:0),numeric(s.z)),rotateY(rad(s.yaw))),translate(numeric(root['transform.x']),numeric(root['transform.y']),numeric(root['transform.z'])));
- base=mul(mul(mul(base,translate(...anchor)),scale(size,size,size)),translate(...anchor.map(v=>-v)));
- const [x,y,z]=transform(base,[0,0,0]),visible=root.visible!==false;
- const selected=last.options.selectedReplayId===replay.id;if(selected){const b=.85*size;lines([x-b,.025+y,z-b,x+b,.025+y,z-b,x+b,.025+y,z-b,x+b,.025+y,z+b,x+b,.025+y,z+b,x-b,.025+y,z+b,x-b,.025+y,z+b,x-b,.025+y,z-b],[.47,.84,1])}
- const clip=transform(vp,[x,y+size*(isVfx?.6:1.1),z]);if(clip[3]>0)picks.push({id:replay.id,x:clip[0]/clip[3],y:clip[1]/clip[3],depth:clip[3],radius:Math.min(.35,2.2*size/clip[3])});
- if(labelLayer){const labelPos=transform(vp,[x,y+size*(isVfx?1.0:2.35),z]),nx=labelPos[0]/labelPos[3],ny=labelPos[1]/labelPos[3];if(labelPos[3]>0&&Math.abs(nx)<1&&Math.abs(ny)<1){const cr=canvas.getBoundingClientRect(),pr=parent.getBoundingClientRect(),label=doc.createElement('span');label.textContent=replay.label+(numeric(s['hotbar.slot'])>0?' · ô '+numeric(s['hotbar.slot']):'')+(visible?'':' · ẩn');Object.assign(label.style,{position:'absolute',left:(cr.left-pr.left+(nx+1)*cr.width/2)+'px',top:(cr.top-pr.top+(1-ny)*cr.height/2)+'px',transform:'translate(-50%,-100%)',padding:'2px 6px',borderRadius:'4px',whiteSpace:'nowrap',font:'12px system-ui, sans-serif',color:'#e6f3ff',background:selected?'#245875':'#10202bdc',border:selected?'1px solid #8bd2ff':'1px solid #587083'});labelLayer.appendChild(label)}}
- if(!visible)continue;
- // These two world-space indicators expose the separate angle channels without combining them.
- if(numeric(s.bodyYaw)!==0){const a=rad(s.bodyYaw);lines([x,y+.04,z,x+Math.sin(a)*1.15,y+.04,z+Math.cos(a)*1.15],[.96,.67,.32])}
- if(numeric(s.headYaw)!==0){const a=rad(s.headYaw);lines([x,y+2*size,z,x+Math.sin(a)*.85,y+2*size,z+Math.cos(a)*.85],[.84,.56,.94])}
- if(!isVfx){const fixture=replay.fixtureId==='wood'?[.60,.40,.24]:[.27,.34,.45],tint=color(root['texture.color'],[1,1,1]),body=fixture.map((v,i)=>v*tint[i]),skin=[.81,.68,.56],dark=body.map(v=>v*.65),kind=String(root['model.kind']||'').toLowerCase(),sneak=enabled(s['states.sneaking']),sprint=enabled(s['states.sprinting']),action=String(root.action||s.action||'').toLowerCase();const torsoY=sneak?1.0:1.15,torso=mul(base,mul(translate(0,torsoY,0),rotateX(rad(sneak?18:0))));if(kind==='block'){box(base,0,.8,0,1,1.6,.65,body)}else{box(torso,0,0,0,.75,.85,.38,body);box(base,-.2,.35,0,.3,.7,.34,dark);box(base,.2,.35,0,.3,.7,.34,dark);
- let head=mul(torso,mul(translate(0,.68,0),mul(I(),rotateX(rad(s.pitch)+rad(root['pose.headX'])))));box(head,0,0,0,.56,.55,.5,skin);box(head,0,.19,-.02,.57,.16,.51,dark);
- const armAngle=rad(root['pose.armX'])+(sprint?-.5:0)+(action==='wave'?-.9:0);let arm=mul(torso,mul(translate(-.52,.3,0),rotateX(armAngle)));box(arm,0,-.32,0,.28,.68,.32,body);box(torso,.52,-.02,0,.28,.68,.32,body);
- if(enabled(s['equipment.head']))box(head,0,.3,0,.64,.15,.58,[.83,.68,.3]);
- const item=s['equipment.mainHand'];if(item==='sword'){box(arm,0,-.76,.12,.12,.55,.12,[.78,.79,.69]);box(arm,0,-.53,.12,.32,.07,.12,[.57,.44,.25])}else if(item==='pickaxe'){box(arm,0,-.76,.12,.09,.65,.09,[.57,.40,.22]);box(arm,0,-1.05,.12,.42,.09,.14,[.72,.76,.78])} 
+/** Build a real Three.js scene graph. Numeric angle channels are independent trainer cues. */
+export function createWorld(){
+ const scene=new THREE.Scene();scene.background=new THREE.Color(0x102331);
+ const camera=new THREE.PerspectiveCamera(45,1,.1,150);
+ scene.add(new THREE.HemisphereLight(0xd9edff,0x40505b,2));const sun=new THREE.DirectionalLight(0xffffff,1.7);sun.position.set(6,12,8);scene.add(sun);
+ const floor=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshLambertMaterial({color:0x142731,side:THREE.DoubleSide}));floor.name='floor';floor.renderOrder=-100;floor.rotation.x=-Math.PI/2;floor.position.y=-.025;scene.add(floor);
+ const grid=new THREE.GridHelper(20,20,0x8bb3c7,0x496878);grid.name='grid';grid.renderOrder=-90;scene.add(grid);
+ const axes=new THREE.AxesHelper(3);axes.name='axes';axes.renderOrder=-80;scene.add(axes);
+ const objects=group(scene,'replays');
+ function applyProject(project,tick,options={}){
+  for(const child of [...objects.children]){objects.remove(child);disposeTree(child)}
+  const state=evaluateProject(project,tick);applyPreview(project,state,options.preview);
+  for(const replay of project.replays){const s=state[replay.id];if(!s)continue;const root=s.parts?.root||{};
+   const replayGroup=group(objects,'replay:'+replay.id);replayGroup.userData.replayId=replay.id;replayGroup.userData.label=replay.label;replayGroup.userData.fixtureId=replay.fixtureId;replayGroup.userData.slot=num(s['hotbar.slot']);replayGroup.userData.formVisible=root.visible!==false;
+   replayGroup.position.set(num(s.x),num(s.y)+(root.action==='jump'?Math.abs(Math.sin(tick*Math.PI/20))*.7:0),num(s.z));replayGroup.rotation.y=rad(s.yaw);
+   const form=group(replayGroup,'form:root');form.position.set(num(root['transform.x']),num(root['transform.y']),num(root['transform.z']));form.visible=root.visible!==false;
+   const anchor=group(form,'anchor:pivot');anchor.position.set(num(root['anchor.x']),num(root['anchor.y']),num(root['anchor.z']));anchor.scale.setScalar(clamp(num(root['transform.scale'],1),.1,4));const content=group(anchor,'anchor:content');content.position.copy(anchor.position).multiplyScalar(-1);
+   if(replay.fixtureId==='vfx')box(content,'vfx:fixture',[0,.25,0],[.3,.3,.3],0xa37bd3);else addFigure(content,replay,s,root);
+   addEffects(content,root,s);
+   for(const part of replay.parts){if(part.id==='root')continue;const data=s.parts?.[part.id]||{};const nested=group(content,'form:'+part.id);nested.visible=data.visible!==false;nested.position.set(num(data['transform.x']),num(data['transform.y']),num(data['transform.z']));nested.scale.setScalar(clamp(num(data['transform.scale'],1),.1,4));addEffects(nested,data,s)}
+   if(options.selectedReplayId===replay.id){const marker=circle(replayGroup,'selection',.9,0x8bdcff);marker.position.copy(form.position)}
+   // Body and head yaw are shown as separate world-space markers, not summed into yaw.
+   for(const [key,color,height,length] of [['bodyYaw',0xf4ad52,.06,1.2],['headYaw',0xd590ef,2.2,.9]])if(num(s[key])!==0){const a=rad(s[key])-replayGroup.rotation.y;const cue=line(replayGroup,'angle:'+key,[[0,height,0],[Math.sin(a)*length,height,Math.cos(a)*length]],color);cue.position.copy(form.position)}
+  }
+  scene.updateMatrixWorld(true);
  }
- }
- if(isVfx)box(base,0,.25,0,.3,.3,.3,[.58,.4,.8]);for(const part of Object.values(s.parts||{})){const effect=String(part['vfx.kind']??'none').toLowerCase();if(effect!=='none'&&effect!=='off'&&part.visible!==false){const [fx,fy,fz]=part===root?[x,y,z]:transform(base,[numeric(part['transform.x']),numeric(part['transform.y']),numeric(part['transform.z'])]),radius=Math.max(.1,Math.min(4,numeric(part['vfx.size'],1)))*size*(part===root?1:Math.max(.1,Math.min(4,numeric(part['transform.scale'],1)))),intensity=Math.max(0,Math.min(2,numeric(s['variable.intensity'],1)))/2,v=[];for(let i=0;i<32;i++){const a=i*Math.PI/16,b=(i+1)*Math.PI/16;v.push(fx+Math.cos(a)*radius,fy+.05,fz+Math.sin(a)*radius,fx+Math.cos(b)*radius,fy+.05,fz+Math.sin(b)*radius)}lines(v,[.65*intensity,.48*intensity,.95*intensity]);if(effect.includes('spark')||effect.includes('particle'))for(let i=0;i<6;i++){const a=i*Math.PI/3;box(translate(fx,fy,fz),Math.cos(a)*radius,.25+i*.15,Math.sin(a)*radius,.09,.09,.09,[.8,.65,1])}}}
- }
- }
- function render(project,tick,options={}){last={project,tick,options};drawFrame()}
- function setView(view){if(view==='front'){camera.azimuth=0;camera.elevation=.15}else if(view==='side'){camera.azimuth=Math.PI/2;camera.elevation=.15}else if(view==='top'){camera.azimuth=0;camera.elevation=Math.PI/2-.01}else if(view==='perspective'){camera={...initial,target:[...initial.target]}}drawFrame()}
- function resetView(){camera={...initial,target:[...initial.target]};drawFrame()}
- function down(e){if(e.button!==0&&e.button!==1&&e.button!==2)return;drag={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,pan:e.button!==0||e.shiftKey};canvas.setPointerCapture(e.pointerId)}
- function move(e){if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(drag.pan){const k=camera.distance*.0018;camera.target[0]-=dx*k*Math.cos(camera.azimuth);camera.target[2]+=dx*k*Math.sin(camera.azimuth);camera.target[1]+=dy*k}else{camera.azimuth-=dx*.008;camera.elevation=Math.max(-1.48,Math.min(1.56,camera.elevation+dy*.008))}drawFrame()}
- function up(e){if(!drag)return;if(!drag.pan&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<5){const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*2-1,y=1-(e.clientY-r.top)/r.height*2,aspect=r.width/r.height;const found=picks.filter(p=>Math.hypot((x-p.x)*aspect,y-p.y)<Math.max(.07,p.radius)).sort((a,b)=>a.depth-b.depth)[0];if(found)onSelect(found.id)}drag=null}
- function wheel(e){e.preventDefault();camera.distance=Math.max(3,Math.min(60,camera.distance*Math.exp(e.deltaY*.001)));drawFrame()}
- function context(e){e.preventDefault()}
- canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);canvas.addEventListener('wheel',wheel,{passive:false});canvas.addEventListener('contextmenu',context);
- const observer=typeof ResizeObserver==='function'?new ResizeObserver(()=>drawFrame()):null;observer?.observe(canvas);
- function dispose(){observer?.disconnect();for(const [name,fn] of [['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',up],['wheel',wheel],['contextmenu',context]])canvas.removeEventListener(name,fn);gl.deleteBuffer(cubeBuffer);gl.deleteBuffer(lineBuffer);gl.deleteProgram(program);labelLayer?.remove();last=null}
+ function dispose(){disposeTree(scene);scene.clear()}
+ return {scene,camera,applyProject,dispose};
+}
+export function createSceneGraph(project,tick=0,options={}){const world=createWorld();world.applyProject(project,tick,options);return world}
+
+export function createScene(canvas,{onSelect=()=>{},onError=()=>{},onStatus=()=>{}}={}){
+ let renderer,mode='webgl';try{const context=canvas.getContext('webgl2',{antialias:true,alpha:false});if(!context)throw new Error('WebGL2 không khả dụng');renderer=new THREE.WebGLRenderer({canvas,context,antialias:true});renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio||1,2));onStatus({mode,message:'Three.js · WebGL'});}catch(webglError){try{renderer=createSoftwareRenderer(canvas);mode='software';onStatus({mode,message:'Three.js · dựng hình phần mềm (không có WebGL2)'});}catch(error){onError('Không thể khởi tạo cảnh Three.js: '+(error?.message||webglError?.message));return {render(){},setView(){},resetView(){},dispose(){}}}}
+ const world=createWorld(),{scene,camera}=world;let last=null,drag=null;const initial={azimuth:.75,elevation:.48,distance:13,target:new THREE.Vector3(.8,1,1)};let view={...initial,target:initial.target.clone()};
+ const parent=canvas.parentElement,doc=canvas.ownerDocument,labelLayer=parent&&doc?.createElement?doc.createElement('div'):null;if(labelLayer){Object.assign(labelLayer.style,{position:'absolute',inset:'0',overflow:'hidden',pointerEvents:'none'});labelLayer.setAttribute('aria-hidden','true');parent.appendChild(labelLayer)}
+ function updateCamera(){const {azimuth:a,elevation:e,distance:d,target:t}=view;camera.position.set(t.x+d*Math.cos(e)*Math.sin(a),t.y+d*Math.sin(e),t.z+d*Math.cos(e)*Math.cos(a));camera.lookAt(t);camera.updateMatrixWorld();}
+ function labels(){if(!labelLayer)return;labelLayer.replaceChildren();const cr=canvas.getBoundingClientRect(),pr=parent.getBoundingClientRect();for(const g of scene.getObjectByName('replays').children){const p=new THREE.Vector3(),form=g.getObjectByName('anchor:content');(form||g).getWorldPosition(p);const scale=new THREE.Vector3();(form||g).getWorldScale(scale);p.y+=(g.userData.fixtureId==='vfx'?1:2.5)*scale.y;p.project(camera);if(p.z < -1||p.z>1||Math.abs(p.x)>1||Math.abs(p.y)>1)continue;const label=doc.createElement('span'),selected=last?.options.selectedReplayId===g.userData.replayId;label.textContent=g.userData.label+(g.userData.slot>0?' · ô '+g.userData.slot:'')+(g.userData.formVisible?'':' · ẩn');Object.assign(label.style,{position:'absolute',left:(cr.left-pr.left+(p.x+1)*cr.width/2)+'px',top:(cr.top-pr.top+(1-p.y)*cr.height/2)+'px',transform:'translate(-50%,-100%)',padding:'2px 6px',borderRadius:'4px',whiteSpace:'nowrap',font:'12px system-ui, sans-serif',color:'#e6f3ff',background:selected?'#245875':'#10202bdc',border:selected?'1px solid #8bd2ff':'1px solid #587083'});labelLayer.appendChild(label)}}
+ function draw(){if(!last)return;const r=canvas.getBoundingClientRect(),w=Math.max(1,Math.round(r.width)),h=Math.max(1,Math.round(r.height));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();updateCamera();renderer.render(scene,camera);labels()}
+ function render(project,tick,options={}){last={project,tick,options};world.applyProject(project,tick,options);draw()}
+ function resetView(){view={...initial,target:initial.target.clone()};draw()}
+ function setView(name){if(name==='perspective'){resetView();return}if(name==='front'){view.azimuth=0;view.elevation=.15}else if(name==='side'){view.azimuth=Math.PI/2;view.elevation=.15}else if(name==='top'){view.azimuth=0;view.elevation=Math.PI/2-.01}draw()}
+ const raycaster=new THREE.Raycaster();function down(e){if(![0,1,2].includes(e.button))return;drag={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,pan:e.button!==0||e.shiftKey};canvas.setPointerCapture(e.pointerId)}
+ function move(e){if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(drag.pan){const k=view.distance*.0018;view.target.x-=dx*k*Math.cos(view.azimuth);view.target.z+=dx*k*Math.sin(view.azimuth);view.target.y+=dy*k}else{view.azimuth-=dx*.008;view.elevation=clamp(view.elevation+dy*.008,-1.48,1.56)}draw()}
+ function up(e){if(!drag)return;if(!drag.pan&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<5){const r=canvas.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,1-(e.clientY-r.top)/r.height*2),camera);const hits=raycaster.intersectObjects(scene.getObjectByName('replays').children,true);for(const hit of hits){let obj=hit.object,visible=true;while(obj&&!obj.userData.replayId){if(!obj.visible)visible=false;obj=obj.parent}if(visible&&obj?.visible&&obj.userData.replayId){onSelect(obj.userData.replayId);break}}}drag=null}
+ function cancel(){drag=null}function wheel(e){e.preventDefault();view.distance=clamp(view.distance*Math.exp(e.deltaY*.001),3,60);draw()}function context(e){e.preventDefault()}
+ const listeners=[['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',cancel],['wheel',wheel],['contextmenu',context]];for(const [n,f] of listeners)canvas.addEventListener(n,f,n==='wheel'?{passive:false}:undefined);
+ const observer=typeof ResizeObserver==='function'?new ResizeObserver(draw):null;observer?.observe(canvas);
+ function dispose(){observer?.disconnect();for(const [n,f] of listeners)canvas.removeEventListener(n,f);labelLayer?.remove();renderer.dispose();world.dispose();last=null}
  return {render,setView,resetView,dispose};
 }

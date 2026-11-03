@@ -10,7 +10,7 @@ Cần Node.js 20 trở lên, không cần cài dependency hoặc tài khoản.
 npm start
 ```
 
-Mở http://localhost:8080. Ứng dụng dùng ES modules, cần HTTP cục bộ; không mở index.html bằng file://. Chạy offline sau khi tải gói, không dùng CDN/backend. Cảnh 3D cần WebGL.
+Mở http://localhost:8080. Ứng dụng dùng ES modules, cần HTTP cục bộ; không mở index.html bằng file://. Chạy offline sau khi tải gói, không dùng CDN/backend. Cảnh 3D dùng Three.js r186 được đóng gói cục bộ, ưu tiên WebGL2; nếu không có GPU, vẫn có chế độ 3D phần mềm có phối cảnh, xoay camera và chọn nhân vật.
 
 ```sh
 npm test
@@ -33,7 +33,7 @@ Danh mục có 21 bài (20 mở được, L04 khóa): 8 cơ bản, 2 phối hợ
 
 ## Giới hạn nghiệm thu
 
-- Kết quả thật trong [REPORT.md](REPORT.md). Browser QA không hỗ trợ WebGL; chưa xác nhận hình ảnh và tương tác 3D.
+- Three.js đã được kiểm tra hình ảnh 3D, xoay camera, chọn nhân vật và tua keyframe trên trình duyệt ở chế độ phần mềm. Nhánh WebGL2/GPU vẫn cần kiểm tra trên thiết bị hỗ trợ. Chi tiết trong [REPORT.md](REPORT.md).
 - L04 khóa chờ fixture góc thử trong game, vì vậy chưa hoàn tất MVP đủ 8 bài.
 - Chưa thử Minecraft/BBS FS 2.7, chưa chứng minh commit khảo sát trùng JAR; hai ảnh gốc chưa có trong repo.
 - Không BOBJ/film BBS, IK, vật lý, UV, thu âm hoặc xuất video. JSON chỉ dành cho trainer.
@@ -42,3 +42,5 @@ Danh mục có 21 bài (20 mở được, L04 khóa): 8 cơ bản, 2 phối hợ
 Chi tiết: [các đợt](docs/PHASES.md), [đặc tả](SPEC.md), [API triển khai](IMPLEMENTATION.md).
 
 Nguồn: [Wemppy4/bbs-fs](https://github.com/Wemppy4/bbs-fs), [Wiki 2.7](https://github.com/Wemppy4/bbs-fs/wiki/2.7.0), commit f48c4fe341df4531f78428ed22bba93d5e6073df. Bằng chứng source trong docs/evidence/.
+
+Three.js MIT: [giấy phép](app/vendor/LICENSE-three.txt), [nguồn và checksum](app/vendor/README.md). Cách dựng hình: [docs/THREEJS.md](docs/THREEJS.md).

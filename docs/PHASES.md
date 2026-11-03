@@ -9,7 +9,7 @@ Ngày 03/11/2026, chủ dự án yêu cầu huy động tiếp code toàn bộ c
 - Chọn/xóa/kéo key hoặc nhập tick đích; Undo/Redo 100 bước. Tua bằng thước hoặc ô số và nút; snap 1 hoặc 0.1 tick. Zoom/cuộn không đổi dữ liệu.
 - Linear, Constant, Sine In/Out cho số; boolean/string giữ giá trị; giữ biên ngoài đoạn. Không tự wrap góc 350→10, không đồng nhất Constant/Step.
 - Playback theo thời gian thực 20 tick/s, lặp playback riêng trainer; dừng khi ẩn tab.
-- WebGL, sân lưới/trục, nhân vật khối tự tạo, chọn đối tượng, preset trước/bên/trên/phối cảnh. Kéo trái orbit; Shift+kéo hoặc kéo giữa/phải pan; cuộn zoom. Thiếu WebGL báo rõ; chấm chỉ kiểm tra dữ liệu.
+- Three.js (WebGL2 hoặc dựng phần mềm có phối cảnh), sân lưới/trục, nhân vật khối tự tạo, chọn đối tượng, preset trước/bên/trên/phối cảnh. Kéo trái orbit; Shift+kéo hoặc kéo giữa/phải pan; cuộn zoom. Chế độ dựng hình được ghi rõ; khi cả GPU và Canvas2D không khả dụng thì báo lỗi. Chấm bài vẫn kiểm tra dữ liệu.
 - L01–L08, L03 tách X/Y/Z, L04 khóa chờ V02. Có hướng dẫn/tự làm, đáp án dữ liệu riêng, chấm rule, giữ lịch sử từng đạt và yêu cầu kiểm tra lại sau sửa.
 - Lưu theo bài/giai đoạn/chế độ và sandbox. JSON schema 1, validate trước thay thế, giới hạn 2 MB/20 Replay/200 track/5.000 key. Nhập/reset có xác nhận; có xuất dự phòng. Bản lưu lỗi không bị ghi đè; reset có xác nhận chỉ bỏ đúng bản lỗi đã quan sát nếu chưa có thay đổi khác.
 - Xung đột tab khóa ghi và cho xuất/tải lại. Revision/lease best-effort vì localStorage không có compare-and-swap nguyên tử.
@@ -45,4 +45,4 @@ E03 phối hợp màu nhân vật và aura. Model không tải tài sản BBS, T
 
 core.js giữ project/nội suy; extensions.js khai báo thuộc tính; lessons.js giữ fixture/rule; persistence.js validate/lưu; scene.js đọc state để vẽ; main.js điều khiển UI. Preview không sửa project. Không có dependency runtime ngoài.
 
-Xem [REPORT.md](../REPORT.md). Node test scene dùng WebGL stub, không thay cho GPU thật. Browser QA hiện thiếu WebGL; chưa thử game, chốt V01/V02/V05 hoặc đối chiếu ảnh gốc. Hiệu năng và các kích thước responsive cần nghiệm thu thêm. L04 còn khóa nên đây là preview có giới hạn, chưa hoàn tất MVP trong SPEC.
+Xem [REPORT.md](../REPORT.md). Node test scene dùng scene graph Three.js thật và kiểm tra phép chiếu phần mềm. Browser QA đã xác nhận cảnh/điều khiển 3D phần mềm, chưa thử nhánh WebGL2/GPU; chưa thử game, chốt V01/V02/V05 hoặc đối chiếu ảnh gốc. Hiệu năng và các kích thước responsive cần nghiệm thu thêm. L04 còn khóa nên đây là preview có giới hạn, chưa hoàn tất MVP trong SPEC.

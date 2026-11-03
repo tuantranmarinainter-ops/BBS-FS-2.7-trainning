@@ -40,7 +40,7 @@ ES modules buildless, không phụ thuộc CDN/backend. `index.html` tại gốc
 
 ### Scene (app/scene.js)
 - `createScene(canvas,{onSelect=()=>{},onError=()=>{}}={})` → `{render(project,tick,{selectedReplayId,preview?,quality?}={}),setView('front'|'side'|'top'|'perspective'),resetView(),dispose()}`. preview optional `{trackId,value}` áp dụng visual only.
-- Raw WebGL (local code), 3D block fixtures + grid/axes, orbit/pan/zoom. visible/position/góc preview (nhãn simulator góc pending), đợt 2/3 đọc properties từ evaluateProject. Render state deterministic. Không WebGL báo rõ.
+- Three.js r186 vendored, WebGL2 hoặc renderer phần mềm cùng scene graph; 3D block fixtures + grid/axes, orbit/pan/zoom. visible/position/góc preview (nhãn simulator góc pending), đợt 2/3 đọc properties từ evaluateProject. Render state deterministic. Renderer phần mềm có nhãn rõ; nếu cả GPU và Canvas2D đều lỗi thì báo không thể chạy 3D.
 - `render` reads project only, no own mutable animation data. Scene may import core.evaluateProject and clone.
 
 ### UI (root index.html, app/styles.css, app/main.js)

@@ -91,7 +91,7 @@ Không thêm nút trang trí có vẻ hoạt động nhưng không làm gì.
 - Cho orbit/pan/zoom góc xem bằng điều khiển có hướng dẫn; đây là camera quan sát trainer, không phải track camera BBS.
 - Nút đặt lại góc nhìn; chế độ nhìn trước/bên/trên giúp học trục.
 - Scrub đến cùng thời điểm luôn trả cùng kết quả.
-- Thiếu WebGL: báo rõ không thể chạy phần 3D; không âm thầm thay bằng hình tĩnh rồi báo đạt.
+- Theo yêu cầu dùng Three.js: ưu tiên WebGL2; thiếu GPU có thể dựng phần mềm từ cùng scene graph/camera, ghi rõ chế độ. Đây vẫn là phối cảnh 3D có tương tác, không thay bằng hình tĩnh. Nếu cả WebGL2/Canvas2D đều lỗi, báo không thể chạy 3D.
 
 Trục thế giới và hướng trái/phải trên màn hình phải được phân biệt. X tăng không luôn có nghĩa đi sang phải màn hình khi đổi camera.
 
@@ -310,3 +310,10 @@ Schema Track tại mục 8 được bổ sung owner (replay hoặc form). Positi
 Lưu progress theo khóa bài/giai đoạn/chế độ; passed, everPassed, attempts, lastCheckedAt, changed và ruleSetVersion. Reset xóa kết quả hiện tại, giữ lịch sử từng đạt. Hạn chế đa tab do localStorage không có giao dịch nguyên tử được ghi trong báo cáo.
 
 Bản triển khai chưa đáp ứng toàn bộ nghiệm thu runtime và visual: L04, đối chiếu hai ảnh, WebGL trên thiết bị có GPU, mobile/các kích thước chuẩn và hiệu năng còn cần thử. Không tuyên bố hoàn tất MVP chỉ từ test Node. Không tự mở phạm vi IK/vật lý/BOBJ/film/video.
+
+
+## 16. Three.js — yêu cầu bổ sung
+
+Thay renderer cũ bằng Three.js r186 vendored (module/core và MIT license), không CDN. Scene/Group/Mesh/PerspectiveCamera/Raycaster quản lý nhân vật, trục, mặt đất, preview và chọn đối tượng. Có chế độ WebGL2 và chế độ phần mềm chiếu chính scene Three.js lên Canvas2D khi không có GPU; nhãn trạng thái phân biệt rõ. Chế độ phần mềm không có texture/shadow đầy đủ và không được coi là kiểm chứng nhánh GPU.
+
+Đã browser QA cảnh phần mềm, orbit, chọn nhân vật, preview tọa độ và tua keyframe làm thay đổi vị trí. L04/runtime game và WebGL2 thật vẫn chưa nghiệm thu. Chi tiết docs/THREEJS.md và phần cập nhật trong REPORT.md.

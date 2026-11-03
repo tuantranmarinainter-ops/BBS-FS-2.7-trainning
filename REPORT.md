@@ -1,3 +1,27 @@
+# Cập nhật Three.js v0.2.1
+
+Theo yêu cầu dùng Three.js để thể hiện 3D, đã thay raw WebGL bằng Three.js r186. Hai module upstream được đóng gói cục bộ và đối chiếu Git blob SHA với mrdoob/three.js tag r186; kèm MIT license. Không CDN, không cần npm install.
+
+- app/scene.js: Scene/Group/Mesh, PerspectiveCamera, lưới/trục/ánh sáng, nhân vật khối, labels, Raycaster, orbit/pan/zoom, preview và các hiệu ứng hiện có.
+- app/software-renderer.js: dựng chính scene Three.js bằng phép chiếu phối cảnh lên Canvas2D khi WebGL2 không khả dụng. Có clipping, depth sorting, renderOrder, màu vertex, ánh sáng phẳng. Không phải ảnh tĩnh. Chế độ phần mềm ghi rõ trên UI, không có textures/shadows đầy đủ.
+- app/vendor/: module/core r186 nguyên bản, giấy phép và SHA; build tự mang theo thư viện. UI báo rõ chế độ hoặc lỗi nếu cả GPU và 2D canvas đều không khả dụng.
+
+| Kiểm tra | Kết quả |
+|---|---|
+| npm test | PASS 41/41, gồm scene graph Three thật, preview không mutate, visibility/hierarchy, meshes/pose/equipment, disposal và phép chiếu/clipping/màu/thứ tự nền |
+| node --check app/main.js, npm run build | PASS |
+| Browser: cảnh 3D phần mềm | PASS: hai nhân vật, màu/lưới/trục, labels, không còn viewport trống |
+| Browser: orbit và chọn | PASS: kéo chuột đổi góc nhìn; bấm nhân vật Gỗ Xưa cập nhật Replay/inspector |
+| Browser: preview và timeline | PASS: preview X=6 làm Gỗ Xưa di chuyển, hủy nháp trở lại; L02 tick0=-2 và tick40=2 thay vị trí Đen trên cảnh |
+| Browser WebGL2/GPU | NOT_RUN: phiên QA không hỗ trợ WebGL2; phần mềm được kiểm tra trực tiếp thay vì coi là GPU pass |
+| Runtime Minecraft và L04 | NOT_RUN; L04 tiếp tục khóa |
+
+Ảnh mới: docs/qa/threejs-desktop.jpg. Hình ảnh trước đó trong trainer-desktop.jpg là bằng chứng phiên cũ, đã được thay thế cho phần 3D. Renderer phần mềm dùng painter sorting với nền riêng, nên chất lượng/occlusion không bằng z-buffer GPU; chưa benchmark hiệu năng. Các giới hạn BBS/rig/morph/BOBJ không thay đổi. PR chưa merge.
+
+---
+
+## Lịch sử nghiệm thu trước khi chuyển Three.js
+
 # Báo cáo triển khai trainer v0.2 — các đợt 1–3
 
 Ngày 03/11/2026. Chủ dự án đã yêu cầu tiếp tục code toàn bộ các đợt, cho phép chuyển từ mockup sang triển khai. Nhóm gồm 6 sub-agent gpt-6.1-terra reasoning high; agent chính tích hợp, rà soát và kiểm thử browser. Không tự merge.
