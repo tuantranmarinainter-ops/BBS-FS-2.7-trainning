@@ -1,0 +1,112 @@
+name: Trainer QA
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Chuẩn bị báo cáo
+        run: mkdir -p artifacts/qa
+
+      - name: Kiểm tra tự động
+        id: unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee artifacts/qa/unit-test.log
+
+      - name: Build
+        id: build
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee artifacts/qa/build.log
+
+      - name: Cài Playwright
+        id: install
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npm install --no-save --package-lock=false playwright@1.62.1 2>&1 | tee artifacts/qa/playwright-install.log
+
+      - name: Cài Chromium
+        if: steps.install.outcome == 'success'
+        id: browser_install
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npx playwright install --with-deps chromium 2>&1 | tee artifacts/qa/chromium-install.log
+
+      - name: Chạy và chụp giao diện
+        if: steps.browser_install.outcome == 'success'
+        id: browser
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/browser-qa.mjs 2>&1 | tee artifacts/qa/browser.log
+
+      - name: Tóm tắt kết quả
+        if: always()
+        env:
+          UNIT: ${{ steps.unit.outcome }}
+          BUILD: ${{ steps.build.outcome }}
+          INSTALL: ${{ steps.install.outcome }}
+          BROWSER_INSTALL: ${{ steps.browser_install.outcome }}
+          BROWSER: ${{ steps.browser.outcome }}
+        run: |
+          {
+            echo '## Kiểm thử trainer'
+            echo ''
+            echo "| Hạng mục | Kết quả |"
+            echo "|---|---|"
+            echo "| Unit/integration | ${UNIT:-skipped} |"
+            echo "| Build | ${BUILD:-skipped} |"
+            echo "| Cài Playwright | ${INSTALL:-skipped} |"
+            echo "| Cài Chromium | ${BROWSER_INSTALL:-skipped} |"
+            echo "| Browser và ảnh | ${BROWSER:-skipped} |"
+            echo ''
+            echo 'Xem ảnh, report.md và log trong artifact trainer-qa ở cuối trang run.'
+            echo 'Kiểm thử trình duyệt CI không chứng minh tương thích Minecraft hoặc hiệu năng GPU thực.'
+          } | tee artifacts/qa/ci-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Lưu ảnh và báo cáo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainer-qa
+          path: artifacts/qa/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Kết luận
+        if: always()
+        env:
+          UNIT: ${{ steps.unit.outcome }}
+          BUILD: ${{ steps.build.outcome }}
+          INSTALL: ${{ steps.install.outcome }}
+          BROWSER_INSTALL: ${{ steps.browser_install.outcome }}
+          BROWSER: ${{ steps.browser.outcome }}
+        run: |
+          if [ "$UNIT" != success ] || [ "$BUILD" != success ] || [ "$INSTALL" != success ] || [ "$BROWSER_INSTALL" != success ] || [ "$BROWSER" != success ]; then
+            echo "Một hoặc nhiều kiểm tra không thành công. Xem artifact trainer-qa."
+            exit 1
+          fi
