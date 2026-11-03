@@ -7,6 +7,18 @@ Phòng tập HTML học BBS FS 2.7 bằng tiếng Việt: mô phỏng Film Edito
 Đã có bản thử sơ bộ ngoài repo, chưa được duyệt hoặc đối chiếu đầy đủ; không coi là bản chuẩn.
 Theo yêu cầu chủ dự án: lập kế hoạch trước, duyệt giao diện trước khi triển khai tiếp.
 
+## Đặc tả toàn bộ các đợt
+[Đọc SPEC.md v0.2](SPEC.md) — bản đề xuất chờ duyệt, chưa phải ứng dụng đã triển khai.
+
+| Đợt | Phạm vi | Bài học | Chi tiết |
+|---|---|---|---|
+| 1 — MVP | Replay, Body parts, Position, keyframe, timeline, nội suy, Visible, lưu và chấm bài | L01–L08 | Mục 3–15 |
+| 2 — Thuộc tính và cấu trúc | States, Hotbar, Equipment, Variables, Pose, Transform, Anchor | L09–L16 | Mục 16 |
+| 3 — Morph và dựng shot | Model, Texture, Actions, VFX, bài theo loại morph | L17–L22 | Mục 17 |
+
+Mục 18–21 quy định dữ liệu/migration, 36 tiêu chí nghiệm thu, các gói triển khai và điểm cần xác minh. Mục 22 giữ riêng backlog ngoài ba đợt.
+P1–P6 là các bước bàn giao, không phải sáu đợt tính năng. Quy ước của trainer và hành vi BBS chưa xác minh được ghi riêng; chưa có kiểm thử runtime trong game.
+
 ## Mục tiêu
 Hiểu chức năng → xem mẫu → làm theo → tự thực hành → áp dụng trong Minecraft.
 Giao diện tham chiếu hai ảnh người dùng cung cấp: Replay bên trái, viewport phía trên, timeline phía dưới và inspector bên phải.
