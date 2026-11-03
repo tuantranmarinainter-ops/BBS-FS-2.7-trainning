@@ -1,10 +1,12 @@
+import { isValidTrackValue } from './extensions.js';
+
 /** Trainer data model. Missing tracks return undefined; mutations reject invalid input. */
 export const clone = value => structuredClone(value);
 const makeId = prefix => `${prefix}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`}`;
 const finite = (value, name) => { if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error(`${name} must be a finite number`); };
 const interpolationTypes = new Set(['linear', 'constant', 'sineInOut']);
 const validValue = (track, value) => {
-  if (!['number', 'boolean', 'string'].includes(track.valueType) || typeof value !== track.valueType || (track.valueType === 'number' && !Number.isFinite(value))) throw new Error(`Invalid ${track.valueType} value for track ${track.id}`);
+  if (!isValidTrackValue(track, value)) throw new Error(`Invalid ${track.valueType} value for track ${track.id}`);
 };
 const validTick = (project, tick) => { finite(tick, 'Tick'); if (tick < 0 || tick > project.durationTicks) throw new Error(`Tick must be between 0 and ${project.durationTicks}`); };
 const requiredTrack = (project, id) => { const track = getTrack(project, id); if (!track) throw new Error(`Track not found: ${id}`); return track; };
@@ -101,3 +103,4 @@ export class History {
   undo() { if (this.canUndo) { this.future.push(this.project); this.project = this.past.pop(); } return this.project; }
   redo() { if (this.canRedo) { this.past.push(this.project); this.project = this.future.pop(); } return this.project; }
 }
+
