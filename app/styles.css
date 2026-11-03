@@ -31,3 +31,12 @@ body[data-interface="bbs"] .lesson-item,body[data-interface="bbs"] .dialog-head,
 body[data-interface="bbs"] label{color:#ddd}
 body[data-interface="bbs"] .banner{background:#5c4630}
 body[data-interface="bbs"] .view-tools button{background:#303030e8}
+
+/* Upstream Replay list anchors Body parts below the list. Track controls remain
+   in the sidebar for this trainer; this is a documented approximation. */
+@media(min-width:761px){
+ body[data-interface="bbs"] #left{display:flex;flex-direction:column}
+ body[data-interface="bbs"] #left>section:nth-child(1){order:1}
+ body[data-interface="bbs"] #left>section:nth-child(2){order:3}
+ body[data-interface="bbs"] #left>section:nth-child(3){order:2}
+}
