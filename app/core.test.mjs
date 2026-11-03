@@ -84,3 +84,22 @@ test('evaluation treats special object names as data, never prototypes', () => {
   assert.equal(Object.getPrototypeOf(state['__proto__'].parts['__proto__']), null);
   assert.equal({}.polluted, undefined);
 });
+
+
+test('key edits reject values that project validation would reject', async () => {
+  const { extendProject } = await import('./extensions.js');
+  const { validateProject } = await import('./persistence.js');
+  const project = extendProject(createProject());
+  for (const [property, invalid] of [
+    ['hotbar.slot', -1], ['hotbar.slot', 2.5], ['hotbar.slot', 9],
+    ['variable.intensity', 2.1], ['equipment.mainHand', 'banana']
+  ]) {
+    const track = findTrack(project, 'den', property);
+    assert.throws(() => upsertKey(project, track.id, 0, invalid), /Invalid/);
+    assert.equal(track.keys.length, 0);
+  }
+  for (const [property, value] of [['hotbar.slot', 8], ['variable.intensity', 2], ['equipment.mainHand', 'sword']]) {
+    const track = findTrack(project, 'den', property);
+    assert.equal(validateProject(upsertKey(project, track.id, 0, value)).valid, true);
+  }
+});
