@@ -107,6 +107,7 @@ export function serializeProject(project) {
 export function createPersistence(options = {}) {
   const namespace = options.namespace ?? 'bbs-trainer-v1';
   const onConflict = options.onConflict ?? (() => {});
+  const validate = options.validate ?? (() => ({ valid: true, errors: [] }));
   const eventTarget = options.eventTarget ?? globalThis;
   let storage = options.storage;
   if (storage === undefined) { try { storage = globalThis.localStorage; } catch { storage = null; } }
@@ -145,6 +146,10 @@ export function createPersistence(options = {}) {
     const path = fullKey(key), leaseKey = `${path}:lease`;
     try {
       if (!storage) throw new Error('Storage unavailable');
+      if (!remove) {
+        const result = validate(value);
+        if (!result?.valid) throw new Error(`Cannot save invalid data: ${result?.errors?.join('; ') || 'validation failed'}`);
+      }
       if (frozen.has(key)) return { ok: false, conflict: true, error: 'Storage conflict; reload before saving' };
       const raw = storage.getItem(path);
       const discarding = remove && discardCorrupt && corrupt.has(key);
@@ -175,3 +180,4 @@ export function createPersistence(options = {}) {
   }
   return { load, save: (key, value) => write(key, value, false), remove: (key, options = {}) => write(key, null, true, options.discardCorrupt === true), destroy: () => eventTarget?.removeEventListener?.('storage', listener) };
 }
+
